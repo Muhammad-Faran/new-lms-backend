@@ -1,0 +1,16 @@
+image: atlassian/default-image:3
+
+pipelines:
+  branches:
+    main:
+      - step:
+          name: Deploy to Production
+          deployment: Production
+          script:
+            - ssh -o StrictHostKeyChecking=no root@$PRODUCTION_SERVER "cd lms-backend && git pull origin main && docker-compose down && docker-compose up -d && sleep 10 && docker exec laravel_app php artisan migrate --force"
+    develop:
+      - step:
+          name: Deploy to Staging
+          deployment: Staging
+          script:
+            - ssh -o StrictHostKeyChecking=no root@$STAGING_SERVER "cd lms-backend && git pull origin develop && docker-compose down && docker-compose up -d && sleep 10 && docker exec laravel_app php artisan migrate --force"

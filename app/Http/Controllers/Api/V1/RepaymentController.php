@@ -1,0 +1,177 @@
+<?php
+
+namespace App\Http\Controllers\Api\V1;
+
+use App\Http\Controllers\Controller;
+use App\Models\Repayment;
+use App\Models\Transaction;
+use App\Models\TransactionInstallment;
+use App\Models\Borrower;
+use App\Models\TransactionLog;
+use App\Filters\V1\RepaymentFilter;
+use App\Http\Resources\V1\RepaymentCollection;
+use App\Http\Resources\V1\RepaymentResource;
+use Illuminate\Http\Request;
+use App\Services\ExportService;
+
+
+class RepaymentController extends Controller
+{
+    protected $exportService;
+
+    public function __construct(ExportService $exportService)
+    {
+        $this->exportService = $exportService;
+    }
+
+        public function index(Request $request)
+    {
+        $filter = new RepaymentFilter();
+
+        $query = Repayment::with(['transaction', 'borrower','installment']);
+
+        $repayments = $filter->filter($query, $request);
+
+        return new RepaymentCollection($repayments);
+    }
+
+    /**
+     * Get a single repayment.
+     */
+    public function show(Repayment $repayment)
+    {
+        return new RepaymentResource($repayment);
+    }
+    
+    /**
+     * API to pay an installment.
+     */
+   public function payInstallment(Request $request)
+{
+    $request->validate([
+        'installment_id' => 'required|exists:transaction_installments,id',
+        'transaction_id' => 'required|exists:transactions,id',
+        'wallet_id' => 'required|exists:borrowers,wallet_id',
+        'amount' => 'required|numeric|min:1',
+    ]);
+
+    $borrower = Borrower::where('wallet_id', $request->wallet_id)->firstOrFail();
+    $transaction = Transaction::findOrFail($request->transaction_id);
+
+    if ($transaction->borrower_id !== $borrower->id) {
+        return response()->json([
+            'message' => 'Unauthorized: The provided wallet ID does not own this transaction.',
+        ], 403);
+    }
+
+    $installment = $transaction->installments()->where('id', $request->installment_id)->first();
+
+    if (!$installment) {
+        return response()->json([
+            'message' => 'The specified installment does not belong to the provided transaction.',
+        ], 422);
+    }
+
+    if ($installment->status === 'paid') {
+        return response()->json([
+            'message' => 'Installment has already been paid.',
+        ], 422);
+    }
+
+    if ($request->amount != $installment->outstanding) {
+        return response()->json([
+            'message' => 'The amount provided does not match the outstanding amount for this installment.',
+            'outstanding' => $installment->outstanding,
+        ], 422);
+    }
+
+    $repayment = Repayment::create([
+        'transaction_id' => $transaction->id,
+        'installment_id' => $installment->id,
+        'borrower_id' => $borrower->id,
+        'amount' => $request->amount,
+        'paid_at' => now(),
+        'status' => 'paid',
+    ]);
+
+    $outstandingAmount = $installment->outstanding;
+
+    $installment->update([
+        'status' => 'paid',
+        'outstanding' => 0,
+    ]);
+
+    $creditLimit = $borrower->creditLimit;
+    if ($creditLimit) {
+        $creditLimit->update([
+            'available_limit' => $creditLimit->available_limit + $outstandingAmount,
+        ]);
+    }
+
+    $transaction->update([
+        'outstanding_amount' => $transaction->outstanding_amount - $outstandingAmount,
+    ]);
+
+    if ($transaction->outstanding_amount <= 0) {
+        $transaction->update(['status' => 'completed']);
+    }
+
+    TransactionLog::create([
+        'transaction_id' => $transaction->id,
+        'transaction_installment_id' => $installment->id,
+        'amount' => $request->amount,
+        'type' => 'collection',
+    ]);
+
+    return response()->json([
+        'message' => 'Installment paid successfully.',
+        'repayment' => $repayment,
+    ]);
+}
+
+ public function export(Request $request)
+{
+    $filter = new RepaymentFilter();
+
+    $query = Repayment::with(['transaction', 'borrower','installment']);
+
+    // Apply filters
+    $repayments = $filter->filter($query, $request);
+
+    if ($repayments->isEmpty()) {
+        return response()->json(['message' => 'No repayments found for the given filters.'], 404);
+    }
+
+    // Prepare data for export
+    $data = $repayments->map(function ($repayment) {
+        return [
+            'Id' => $repayment->id,
+            'Amount Paid' => $repayment->amount,
+            'Transaction Id' => optional($repayment->transaction)->id,
+            'Borrower' => optional($repayment->borrower)->first_name . ' ' . optional($repayment->borrower)->last_name,
+            'Shipper' => optional($repayment->borrower)->shipper_name,
+            'Product' => optional($repayment->transaction->product)->name,
+            'Order Number' => $repayment->transaction->order_number,
+            'Order Amount' => $repayment->transaction->order_amount,
+            'Financing Amount' => $repayment->transaction->loan_amount,
+            'Total Charges' => $repayment->transaction->total_charges,
+            'Disbursed Amount' => $repayment->transaction->disbursed_amount,
+            'Disbursement Date' => optional($repayment->created_at)->format('Y-m-d'),
+            'Paid Date' => $repayment->paid_at,
+            'Status' => $repayment->status,
+        ];
+    })->toArray();
+
+    $headers = [
+        'Id','Amount Paid', 'Transaction Id', 'Borrower', 'Shipper', 'Product', 'Order Number',
+        'Order Amount', 'Financing Amount', 'Total Charges', 'Disbursed Amount',
+        'Paid Date', 'Disbursement Date', 'Status',
+    ];
+
+    // Use ExportService to create the Excel file
+    return $this->exportService->exportToExcel('repayments.xlsx', $data, $headers);
+}
+
+
+
+}
