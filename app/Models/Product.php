@@ -44,8 +44,8 @@ class Product extends Model
         return $this->status === 1; // Returns true if active, false if inactive
     }
 
-     public function borrowers()
+     public function applicants()
     {
-        return $this->belongsToMany(Borrower::class, 'borrower_products');
+        return $this->belongsToMany(Applicant::class, 'applicant_products');
     }
 }

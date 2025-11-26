@@ -7,18 +7,18 @@ use App\Filters\ApiFilter;
 class RepaymentFilter extends ApiFilter
 {
 
-    protected $relation_table = 'borrowers';
+    protected $relation_table = 'applicants';
 
     protected $current_table = 'repayments';
 
-    protected $current_table_foreign_key = 'borrower_id';
+    protected $current_table_foreign_key = 'applicant_id';
 
      protected $dateFilterColumn = 'repayments.created_at';
 
 
     protected $relationSearchFields = [
-        'borrower.first_name',
-        'borrower.last_name',
+        'applicant.first_name',
+        'applicant.last_name',
     ];
 
     protected $relationSearchTableFields = [
@@ -46,7 +46,7 @@ class RepaymentFilter extends ApiFilter
         ['name' => 'ID', 'selector' => 'repayments.id'],
         ['name' => 'Transaction ID', 'selector' => 'repayments.transaction_id'],
         ['name' => 'Installment ID', 'selector' => 'repayments.installment_id'],
-        ['name' => 'Borrower ID', 'selector' => 'repayments.borrower_id'],
+        ['name' => 'Applicant ID', 'selector' => 'repayments.applicant_id'],
         ['name' => 'Amount', 'selector' => 'repayments.amount'],
         ['name' => 'Status', 'selector' => 'repayments.status'],
         ['name' => 'Paid At', 'selector' => 'repayments.paid_at'],

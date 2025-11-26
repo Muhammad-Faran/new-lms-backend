@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\V1\UserController;
 use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\ProductController;
-use App\Http\Controllers\Api\V1\BorrowerController;
+use App\Http\Controllers\Api\V1\ApplicantController;
 use App\Http\Controllers\Api\V1\CreditLimitController;
 use App\Http\Controllers\Api\V1\TransactionController;
 use App\Http\Controllers\Api\V1\RepaymentController;
@@ -49,23 +49,23 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api\V1', 'm
 		Route::post('/addProduct', [ProductController::class, 'addProduct'])->can('add-product');
 		Route::get('/products', [ProductController::class, 'index'])->can('view-products');
         Route::patch('/products/{id}/updateStatus', [ProductController::class, 'updateStatus'])->can('update-product-status');
-        Route::post('/addBorrower', [BorrowerController::class, 'addBorrower'])->can('add-borrower')->middleware('api.log');
-        Route::post('/addBorrowersBulk', [BorrowerController::class, 'addBorrowersBulk'])->can('add-borrower')->middleware('api.log');
-        Route::get('/borrower', [BorrowerController::class, 'borrowerByWalletId'])->can('view-borrowers');
-        Route::get('/borrowers', [BorrowerController::class, 'index'])->can('view-borrowers');
-        Route::get('/borrowers/{borrower}', [BorrowerController::class, 'show'])->can('view-borrowers');
-        Route::put('/borrowers/{borrower}', [BorrowerController::class, 'update'])->can('update-borrowers');
-        Route::post('/borrowers/{borrower}/products/sync', [BorrowerController::class, 'syncBorrowerProducts'])->can('sync-borrower-products');
-        Route::post('/borrowers/{borrower}/assignCreditLimit', [BorrowerController::class, 'assignCreditLimit'])->can('assign-credit-limit');
-        Route::post('/borrowers/{borrower}/assignFinancingPolicy', [BorrowerController::class, 'assignFinancingPolicy'])->can('assign-financing-policy');
-        Route::get('/borrower/shipper-names', [BorrowerController::class, 'getUniqueShipperNames']);
-        Route::post('/refreshOfacNacta', [BorrowerController::class, 'refreshOfacNacta'])->can('refresh-ofac-nacta');
-        Route::post('/refreshCreditEngineShipperCreditScore', [BorrowerController::class, 'refreshCreditEngineShipperCreditScore'])->can('refresh-credit-score');
-        Route::post('/refreshCreditEngineShipperInfo', [BorrowerController::class, 'refreshCreditEngineShipperInfo'])->can('refresh-shipper-info');
-        Route::post('/refreshCreditEngineShipperKyc', [BorrowerController::class, 'refreshCreditEngineShipperKyc'])->can('refresh-shipper-kyc');
-        Route::post('/refreshCreditEngineShipperPricing', [BorrowerController::class, 'refreshCreditEngineShipperPricing'])->can('refresh-shipper-pricing');
+        Route::post('/addApplicant', [ApplicantController::class, 'addApplicant'])->can('add-Applicant')->middleware('api.log');
+        Route::post('/addApplicantsBulk', [ApplicantController::class, 'addApplicantsBulk'])->can('add-Applicant')->middleware('api.log');
+        Route::get('/Applicant', [ApplicantController::class, 'ApplicantByWalletId'])->can('view-applicants');
+        Route::get('/Applicants', [ApplicantController::class, 'index'])->can('view-applicants');
+        Route::get('/Applicants/{Applicant}', [ApplicantController::class, 'show'])->can('view-applicants');
+        Route::put('/Applicants/{Applicant}', [ApplicantController::class, 'update'])->can('update-applicants');
+        Route::post('/Applicants/{Applicant}/products/sync', [ApplicantController::class, 'syncApplicantProducts'])->can('sync-Applicant-products');
+        Route::post('/Applicants/{Applicant}/assignCreditLimit', [ApplicantController::class, 'assignCreditLimit'])->can('assign-credit-limit');
+        Route::post('/Applicants/{Applicant}/assignFinancingPolicy', [ApplicantController::class, 'assignFinancingPolicy'])->can('assign-financing-policy');
+        Route::get('/Applicant/shipper-names', [ApplicantController::class, 'getUniqueShipperNames']);
+        Route::post('/refreshOfacNacta', [ApplicantController::class, 'refreshOfacNacta'])->can('refresh-ofac-nacta');
+        Route::post('/refreshCreditEngineShipperCreditScore', [ApplicantController::class, 'refreshCreditEngineShipperCreditScore'])->can('refresh-credit-score');
+        Route::post('/refreshCreditEngineShipperInfo', [ApplicantController::class, 'refreshCreditEngineShipperInfo'])->can('refresh-shipper-info');
+        Route::post('/refreshCreditEngineShipperKyc', [ApplicantController::class, 'refreshCreditEngineShipperKyc'])->can('refresh-shipper-kyc');
+        Route::post('/refreshCreditEngineShipperPricing', [ApplicantController::class, 'refreshCreditEngineShipperPricing'])->can('refresh-shipper-pricing');
 
-        Route::patch('/borrowers/updateStatus', [BorrowerController::class, 'updateStatus'])->can('update-borrower-status');
+        Route::patch('/Applicants/updateStatus', [ApplicantController::class, 'updateStatus'])->can('update-applicant-status');
         Route::get('/credit-limit', [CreditLimitController::class, 'show'])->can('get-credit-limit');
 
         Route::get('/transactions', [TransactionController::class, 'index'])->can('view-transactions');
@@ -78,8 +78,8 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api\V1', 'm
 
 
 
-        Route::get('/loan-details', [BorrowerController::class, 'getLoanDetails'])->can('loan-details');
-        Route::get('/loan-details-listing', [BorrowerController::class, 'getLoanDetailsListing'])->can('loan-details');
+        Route::get('/loan-details', [ApplicantController::class, 'getLoanDetails'])->can('loan-details');
+        Route::get('/loan-details-listing', [ApplicantController::class, 'getLoanDetailsListing'])->can('loan-details');
         Route::post('/repayment/pay-installment', [RepaymentController::class, 'payInstallment'])->can('pay-installment')->middleware('api.log');
         Route::get('/repayments', [RepaymentController::class, 'index'])->can('view-repayments');
         Route::get('/repayments/{repayment}', [RepaymentController::class, 'show'])->can('view-repayments');

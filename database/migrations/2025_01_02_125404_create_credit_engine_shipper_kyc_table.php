@@ -11,8 +11,8 @@ class CreateCreditEngineShipperKycTable extends Migration
         Schema::create('credit_engine_shipper_kyc', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('shipper_id')->unique();
-            $table->unsignedBigInteger('borrower_id');
-            $table->foreign('borrower_id')->references('id')->on('borrowers')->onDelete('cascade');
+            $table->unsignedBigInteger('applicant_id');
+            $table->foreign('applicant_id')->references('id')->on('applicants')->onDelete('cascade');
             $table->json('data');
             $table->timestamps();
         });

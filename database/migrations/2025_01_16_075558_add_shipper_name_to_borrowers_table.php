@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('borrowers', function (Blueprint $table) {
+        Schema::table('applicants', function (Blueprint $table) {
             $table->string('shipper_name')->nullable()->after('shipper_id'); // Add shipper_name column
         });
     }
@@ -21,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('borrowers', function (Blueprint $table) {
+        Schema::table('applicants', function (Blueprint $table) {
             $table->dropColumn('shipper_name'); // Remove shipper_name column
         });
     }

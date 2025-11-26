@@ -11,16 +11,16 @@ class CreditLimit extends Model
     use LogsModelChanges;
     
     protected $fillable = [
-        'borrower_id',
+        'applicant_id',
         'credit_limit',
         'available_limit',
         'status',
         'date_assigned',
     ];
 
-    // One-to-One inverse relationship with Borrower
-    public function borrower()
+    // One-to-One inverse relationship with applicant
+    public function applicant()
     {
-        return $this->belongsTo(Borrower::class);
+        return $this->belongsTo(Applicant::class);
     }
 }

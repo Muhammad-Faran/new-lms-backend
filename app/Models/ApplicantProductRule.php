@@ -7,15 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 use App\Traits\LogsModelChanges;
 
 
-class BorrowerProductRule extends Model
+class ApplicantProductRule extends Model
 {
     use HasFactory, LogsModelChanges;
 
-    protected $fillable = ['borrower_id', 'product_id', 'charge_unit', 'charge_value'];
+    protected $fillable = ['applicant_id', 'product_id', 'charge_unit', 'charge_value'];
 
-    public function borrower()
+    public function applicant()
     {
-        return $this->belongsTo(Borrower::class);
+        return $this->belongsTo(Applicant::class);
     }
 
     public function product()

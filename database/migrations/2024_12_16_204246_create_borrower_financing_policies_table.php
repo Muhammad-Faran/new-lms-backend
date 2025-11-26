@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('borrower_financing_policies', function (Blueprint $table) {
+        Schema::create('applicant_financing_policies', function (Blueprint $table) {
         $table->id(); // Primary key
-        $table->foreignId('borrower_id')->constrained('borrowers')->onDelete('cascade'); // Borrower reference
+        $table->foreignId('applicant_id')->constrained('applicants')->onDelete('cascade'); // applicant reference
         $table->decimal('financing_percentage', 5, 2); // Percentage allowed for financing (e.g., 70.00 for 70%)
         $table->timestamps(); // Created and updated timestamps
     });
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('borrower_financing_policies');
+        Schema::dropIfExists('applicant_financing_policies');
     }
 };

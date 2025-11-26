@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Repayment;
 use App\Models\Transaction;
 use App\Models\TransactionInstallment;
-use App\Models\Borrower;
+use App\Models\Applicant;
 use App\Models\TransactionLog;
 use App\Filters\V1\RepaymentFilter;
 use App\Http\Resources\V1\RepaymentCollection;
@@ -28,7 +28,7 @@ class RepaymentController extends Controller
     {
         $filter = new RepaymentFilter();
 
-        $query = Repayment::with(['transaction', 'borrower','installment']);
+        $query = Repayment::with(['transaction', 'applicant','installment']);
 
         $repayments = $filter->filter($query, $request);
 
@@ -51,14 +51,14 @@ class RepaymentController extends Controller
     $request->validate([
         'installment_id' => 'required|exists:transaction_installments,id',
         'transaction_id' => 'required|exists:transactions,id',
-        'wallet_id' => 'required|exists:borrowers,wallet_id',
+        'wallet_id' => 'required|exists:applicants,wallet_id',
         'amount' => 'required|numeric|min:1',
     ]);
 
-    $borrower = Borrower::where('wallet_id', $request->wallet_id)->firstOrFail();
+    $applicant = Applicant::where('wallet_id', $request->wallet_id)->firstOrFail();
     $transaction = Transaction::findOrFail($request->transaction_id);
 
-    if ($transaction->borrower_id !== $borrower->id) {
+    if ($transaction->applicant_id !== $applicant->id) {
         return response()->json([
             'message' => 'Unauthorized: The provided wallet ID does not own this transaction.',
         ], 403);
@@ -88,7 +88,7 @@ class RepaymentController extends Controller
     $repayment = Repayment::create([
         'transaction_id' => $transaction->id,
         'installment_id' => $installment->id,
-        'borrower_id' => $borrower->id,
+        'applicant_id' => $applicant->id,
         'amount' => $request->amount,
         'paid_at' => now(),
         'status' => 'paid',
@@ -101,7 +101,7 @@ class RepaymentController extends Controller
         'outstanding' => 0,
     ]);
 
-    $creditLimit = $borrower->creditLimit;
+    $creditLimit = $applicant->creditLimit;
     if ($creditLimit) {
         $creditLimit->update([
             'available_limit' => $creditLimit->available_limit + $outstandingAmount,
@@ -133,7 +133,7 @@ class RepaymentController extends Controller
 {
     $filter = new RepaymentFilter();
 
-    $query = Repayment::with(['transaction', 'borrower','installment']);
+    $query = Repayment::with(['transaction', 'applicant','installment']);
 
     // Apply filters
     $repayments = $filter->filter($query, $request);
@@ -148,8 +148,8 @@ class RepaymentController extends Controller
             'Id' => $repayment->id,
             'Amount Paid' => $repayment->amount,
             'Transaction Id' => optional($repayment->transaction)->id,
-            'Borrower' => optional($repayment->borrower)->first_name . ' ' . optional($repayment->borrower)->last_name,
-            'Shipper' => optional($repayment->borrower)->shipper_name,
+            'applicant' => optional($repayment->applicant)->first_name . ' ' . optional($repayment->applicant)->last_name,
+            'Shipper' => optional($repayment->applicant)->shipper_name,
             'Product' => optional($repayment->transaction->product)->name,
             'Order Number' => $repayment->transaction->order_number,
             'Order Amount' => $repayment->transaction->order_amount,
@@ -163,7 +163,7 @@ class RepaymentController extends Controller
     })->toArray();
 
     $headers = [
-        'Id','Amount Paid', 'Transaction Id', 'Borrower', 'Shipper', 'Product', 'Order Number',
+        'Id','Amount Paid', 'Transaction Id', 'applicant', 'Shipper', 'Product', 'Order Number',
         'Order Amount', 'Financing Amount', 'Total Charges', 'Disbursed Amount',
         'Paid Date', 'Disbursement Date', 'Status',
     ];

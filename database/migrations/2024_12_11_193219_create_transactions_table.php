@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
         $table->id();
-        $table->unsignedBigInteger('borrower_id');
+        $table->unsignedBigInteger('applicant_id');
         $table->unsignedBigInteger('product_id');
         $table->unsignedBigInteger('plan_id');
         $table->decimal('loan_amount', 10, 2);
@@ -23,7 +23,7 @@ return new class extends Migration
         $table->enum('status', ['review','approve','reject','disbursed','completed','cancelled','reversed','hold']); // Default status of the product
         $table->timestamps();
 
-        $table->foreign('borrower_id')->references('id')->on('borrowers')->onDelete('cascade');
+        $table->foreign('applicant_id')->references('id')->on('applicants')->onDelete('cascade');
         $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
         $table->foreign('plan_id')->references('id')->on('product_plans')->onDelete('cascade');
     });

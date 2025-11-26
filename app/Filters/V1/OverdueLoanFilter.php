@@ -6,9 +6,9 @@ use App\Filters\ApiFilter;
 
 class OverdueLoanFilter extends ApiFilter
 {
-    protected $relation_table = 'borrowers';
+    protected $relation_table = 'applicants';
     protected $current_table = 'transactions';
-    protected $current_table_foreign_key = 'borrower_id';
+    protected $current_table_foreign_key = 'applicant_id';
     protected $dateFilterColumn = 'transactions.created_at';
 
     protected $sortFields = [
@@ -17,11 +17,11 @@ class OverdueLoanFilter extends ApiFilter
     ];
 
     protected $relationSearchFields = [
-        'borrower.first_name',
-        'borrower.last_name',
-        'borrower.mobile_no',
-        'borrower.shipper_name',
-        'borrower.cnic',
+        'applicant.first_name',
+        'applicant.last_name',
+        'applicant.mobile_no',
+        'applicant.shipper_name',
+        'applicant.cnic',
     ];
 
     protected $searchFields = [
@@ -46,7 +46,7 @@ class OverdueLoanFilter extends ApiFilter
 
     protected $columnHeaders = [
         ['name' => 'ID', 'selector' => 'transactions.id'],
-        ['name' => 'Borrower ID', 'selector' => 'transactions.borrower_id'],
+        ['name' => 'Applicant ID', 'selector' => 'transactions.applicant_id'],
         ['name' => 'Product ID', 'selector' => 'transactions.product_id'],
         ['name' => 'Plan ID', 'selector' => 'transactions.plan_id'],
         ['name' => 'Loan Amount', 'selector' => 'transactions.loan_amount'],

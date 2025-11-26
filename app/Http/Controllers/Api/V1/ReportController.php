@@ -27,7 +27,7 @@ class ReportController extends Controller
    public function getOverdueLoans(Request $request)
 {
     // Fetch transactions where any of its installments are overdue and unpaid
-    $query = Transaction::with(['borrower', 'installments'])
+    $query = Transaction::with(['applicant', 'installments'])
         ->whereHas('installments', function ($query) {
             $query->where('due_date', '<', now()) // Overdue
                   ->where('status', 'unpaid'); // Only unpaid installments
@@ -48,7 +48,7 @@ public function exportOverdueLoans(Request $request)
     $filter = new OverdueLoanFilter();
 
     // Fetch transactions where any of its installments are overdue and unpaid
-    $query = Transaction::with(['borrower', 'installments'])
+    $query = Transaction::with(['applicant', 'installments'])
         ->whereHas('installments', function ($query) {
             $query->where('due_date', '<', now())
                   ->where('status', 'unpaid');
@@ -73,7 +73,7 @@ public function exportOverdueLoans(Request $request)
             $dueDate = optional($overdueInstallment)->due_date;
 
         return [
-            'Borrower Name' => optional($transaction->borrower)->first_name . ' ' . optional($transaction->borrower)->last_name,
+            'Applicant Name' => optional($transaction->applicant)->first_name . ' ' . optional($transaction->applicant)->last_name,
             'Transaction ID' => $transaction->id,
             'Amount' => $transaction->loan_amount,
             'Date of Disbursement' => optional($transaction->created_at)->format('Y-m-d'),
@@ -87,7 +87,7 @@ public function exportOverdueLoans(Request $request)
     })->toArray();
 
     $headers = [
-        'Borrower Name', 'Transaction ID', 'Amount', 'Date of Disbursement', 'Due Date', 'Days Overdue'
+        'Applicant Name', 'Transaction ID', 'Amount', 'Date of Disbursement', 'Due Date', 'Days Overdue'
     ];
 
     // Use ExportService to create an Excel file

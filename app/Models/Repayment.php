@@ -9,7 +9,7 @@ class Repayment extends Model
     protected $fillable = [
         'transaction_id',
         'installment_id',
-        'borrower_id',
+        'applicant_id',
         'amount',
         'paid_at',
         'status',
@@ -25,9 +25,9 @@ class Repayment extends Model
         return $this->belongsTo(TransactionInstallment::class);
     }
 
-    public function borrower()
+    public function applicant()
     {
-        return $this->belongsTo(Borrower::class);
+        return $this->belongsTo(Applicant::class);
     }
 }
 

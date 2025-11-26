@@ -10,7 +10,7 @@ class CreateCreditLimitsTable extends Migration
     {
         Schema::create('credit_limits', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('borrower_id')->unique(); // One-to-one relationship
+            $table->unsignedBigInteger('applicant_id')->unique(); // One-to-one relationship
             $table->decimal('credit_limit', 15, 2); // Total credit limit
             $table->decimal('available_limit', 15, 2); // Available credit limit
             $table->enum('status', ['active', 'inactive']); // Limit status
@@ -18,7 +18,7 @@ class CreateCreditLimitsTable extends Migration
             $table->timestamps();
 
             // Foreign key relationship
-            $table->foreign('borrower_id')->references('id')->on('borrowers')->onDelete('cascade');
+            $table->foreign('applicant_id')->references('id')->on('applicants')->onDelete('cascade');
         });
     }
 

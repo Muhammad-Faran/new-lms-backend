@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\Borrower;
+use App\Models\Applicant;
 use App\Models\CreditLimit;
 use Illuminate\Http\Request;
 
@@ -15,33 +15,33 @@ class CreditLimitController extends Controller
         'wallet_id' => 'required|string', // Wallet ID is required
     ]);
 
-    // Find borrower by wallet_id
-    $borrower = Borrower::where('wallet_id', $request->wallet_id)->first();
+    // Find applicant by wallet_id
+    $applicant = Applicant::where('wallet_id', $request->wallet_id)->first();
 
-    if (!$borrower) {
+    if (!$applicant) {
         return response()->json([
-            'message' => 'Borrower not found.',
+            'message' => 'applicant not found.',
         ], 404);
     }
 
-    // Check if the borrower is active
-    if (!$borrower->is_active) {
+    // Check if the applicant is active
+    if (!$applicant->is_active) {
         return response()->json([
-            'message' => 'Borrower is disabled.',
-        ], 403); // Return a 403 Forbidden status for disabled borrowers
+            'message' => 'applicant is disabled.',
+        ], 403); // Return a 403 Forbidden status for disabled applicants
     }
 
-    // Fetch the borrower's credit limit
-    $creditLimit = CreditLimit::where('borrower_id', $borrower->id)->first();
+    // Fetch the applicant's credit limit
+    $creditLimit = CreditLimit::where('applicant_id', $applicant->id)->first();
 
     if (!$creditLimit) {
         return response()->json([
-            'message' => 'Credit limit not found for the borrower.',
+            'message' => 'Credit limit not found for the applicant.',
         ], 404);
     }
 
-    // Fetch the borrower's credit score data
-    $creditScore = $borrower->creditEngineShipperCreditScore()->first();
+    // Fetch the applicant's credit score data
+    $creditScore = $applicant->creditEngineShipperCreditScore()->first();
     $creditScoreData = $creditScore && is_string($creditScore->data) 
         ? json_decode($creditScore->data, true) 
         : ($creditScore->data ?? null); // Handle case where data is already an array

@@ -7,13 +7,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Transaction;
 use App\Models\Product;
-use App\Models\BorrowerProductRule;
+use App\Models\ApplicantProductRule;
 use App\Models\TransactionLog;
 use App\Models\ProductPlan;
 use App\Http\Resources\V1\TransactionResource;
 use App\Http\Resources\V1\TransactionCollection;
 use App\Filters\V1\TransactionFilter;
-use App\Models\Borrower;
+use App\Models\Applicant;
 use App\Services\ExportService;
 
 class TransactionController extends Controller
@@ -29,7 +29,7 @@ class TransactionController extends Controller
     {
         $filter = new TransactionFilter();
 
-        $query = Transaction::with(['charges', 'installments', 'borrower', 'product']);
+        $query = Transaction::with(['charges', 'installments', 'applicant', 'product']);
 
         $transactions = $filter->filter($query, $request);
 
@@ -45,7 +45,7 @@ class TransactionController extends Controller
 {
     $filter = new TransactionFilter();
 
-    $query = Transaction::with(['charges', 'installments', 'borrower', 'product']);
+    $query = Transaction::with(['charges', 'installments', 'applicant', 'product']);
 
     // Apply filters
     $transactions = $filter->filter($query, $request);
@@ -58,8 +58,8 @@ class TransactionController extends Controller
     $data = $transactions->map(function ($transaction) {
         return [
             'Id' => $transaction->id,
-            'Borrower' => optional($transaction->borrower)->first_name . ' ' . optional($transaction->borrower)->last_name,
-            'Shipper' => optional($transaction->borrower)->shipper_name,
+            'Applicant' => optional($transaction->applicant)->first_name . ' ' . optional($transaction->applicant)->last_name,
+            'Shipper' => optional($transaction->applicant)->shipper_name,
             'Product' => optional($transaction->product)->name,
             'Order Number' => $transaction->order_number,
             'Order Amount' => $transaction->order_amount,
@@ -73,7 +73,7 @@ class TransactionController extends Controller
     })->toArray();
 
     $headers = [
-        'Id', 'Borrower', 'Shipper', 'Product', 'Order Number',
+        'Id', 'Applicant', 'Shipper', 'Product', 'Order Number',
         'Order Amount', 'Financing Amount', 'Total Charges', 'Disbursed Amount',
         'Due Date', 'Disbursement Date', 'Status',
     ];
@@ -90,32 +90,32 @@ public function initiateTransaction(Request $request)
         'order_number' => 'required|unique:transactions,order_number',
         'plan_id' => 'required|exists:product_plans,id',
         'product_id' => 'required|exists:products,id',
-        'borrower_id' => 'required|exists:borrowers,id',
+        'applicant_id' => 'required|exists:applicants,id',
     ]);
 
     DB::beginTransaction();
 
     try {
-        $borrower = Borrower::with(['creditLimit', 'financingPolicy', 'products', 'borrowerThreshold'])->findOrFail($request->borrower_id);
+        $applicant = Applicant::with(['creditLimit', 'financingPolicy', 'products', 'applicantThreshold'])->findOrFail($request->applicant_id);
 
-        if (!$borrower->is_active) {
-            return response()->json(['message' => 'Transaction failed: Borrower is disabled.'], 403);
+        if (!$applicant->is_active) {
+            return response()->json(['message' => 'Transaction failed: Applicant is disabled.'], 403);
         }
 
-        if (in_array($borrower->id, [114, 809, 821, 822, 823]) && $request->loan_amount > 3100) {
+        if (in_array($applicant->id, [114, 809, 821, 822, 823]) && $request->loan_amount > 3100) {
             return response()->json([
-                'message' => 'Transaction failed: Order value threshold breached for this borrower.'
+                'message' => 'Transaction failed: Order value threshold breached for this Applicant.'
             ], 422);
         }
 
 
-        if (!$borrower->products->contains('id', $request->product_id)) {
-            return response()->json(['message' => 'Transaction failed: Borrower cannot avail this product at this time.'], 403);
+        if (!$applicant->products->contains('id', $request->product_id)) {
+            return response()->json(['message' => 'Transaction failed: Applicant cannot avail this product at this time.'], 403);
         }
 
-        $financingPercentage = $borrower->financingPolicy->financing_percentage ?? 100;
+        $financingPercentage = $applicant->financingPolicy->financing_percentage ?? 100;
         $adjustedLoanAmount = ceil($request->loan_amount * ($financingPercentage / 100));
-        $availableLimit = $borrower->creditLimit->available_limit ?? 0;
+        $availableLimit = $applicant->creditLimit->available_limit ?? 0;
 
         if ($adjustedLoanAmount > $availableLimit) {
             return response()->json(['message' => 'Transaction failed: Adjusted loan amount exceeds available credit limit.'], 422);
@@ -153,21 +153,21 @@ public function initiateTransaction(Request $request)
         $chargesData = [];
         $fedLogData = [];
 
-if (!empty($borrower->borrowerThreshold) &&
-    !empty($borrower->borrowerThreshold->order_threshold) &&
-    !empty($borrower->borrowerThreshold->fixed_threshold_charges)) {
+if (!empty($applicant->applicantThreshold) &&
+    !empty($applicant->applicantThreshold->order_threshold) &&
+    !empty($applicant->applicantThreshold->fixed_threshold_charges)) {
 
-    // Borrower threshold is set, apply its charge if applicable
-    if ($request->loan_amount <= $borrower->borrowerThreshold->order_threshold) {
-        $chargeAmount = $borrower->borrowerThreshold->fixed_threshold_charges;
+    // Applicant threshold is set, apply its charge if applicable
+    if ($request->loan_amount <= $applicant->applicantThreshold->order_threshold) {
+        $chargeAmount = $applicant->applicantThreshold->fixed_threshold_charges;
 
         $chargesData[] = [
             'product_tier_id' => $tier->id, // Not related to a specific tier
-            'product_charge_id' => null, // No specific charge since it's borrower-level
+            'product_charge_id' => null, // No specific charge since it's Applicant-level
             'charge_amount' => $chargeAmount,
             'apply_fed' => false,
             'fed_amount' => 0,
-            'charge_condition' => 'Borrower Threshold Charge',
+            'charge_condition' => 'Applicant Threshold Charge',
             'created_at' => now(),
             'updated_at' => now(),
         ];
@@ -184,9 +184,9 @@ if (!empty($borrower->borrowerThreshold) &&
         $totalCharges += $chargeAmount;
 
     } 
-    // Loan amount exceeds borrower threshold → SKIP tier threshold, go to percentage calculation
+    // Loan amount exceeds Applicant threshold → SKIP tier threshold, go to percentage calculation
 } elseif (!empty($tier->order_threshold) && $request->loan_amount <= $tier->order_threshold) {
-    // Borrower threshold is not set, check tier threshold
+    // Applicant threshold is not set, check tier threshold
     $chargeAmount = $tier->fixed_threshold_charges;
 
     $chargesData[] = [
@@ -212,9 +212,9 @@ if (!empty($borrower->borrowerThreshold) &&
     $totalCharges += $chargeAmount;
 }
 
-// If neither borrower nor tier threshold applies, OR if borrower threshold exists but is exceeded → use percentage-based charges
- if ((empty($borrower->borrowerThreshold) && (!empty($tier->order_threshold) && $request->loan_amount > $tier->order_threshold)) || (!empty($borrower->borrowerThreshold) && $request->loan_amount > $borrower->borrowerThreshold->order_threshold)) {
-    $borrowerRule = BorrowerProductRule::where('borrower_id', $borrower->id)
+// If neither Applicant nor tier threshold applies, OR if Applicant threshold exists but is exceeded → use percentage-based charges
+ if ((empty($applicant->applicantThreshold) && (!empty($tier->order_threshold) && $request->loan_amount > $tier->order_threshold)) || (!empty($applicant->applicantThreshold) && $request->loan_amount > $applicant->applicantThreshold->order_threshold)) {
+    $applicantRule = ApplicantProductRule::where('applicant_id', $applicant->id)
         ->where('product_id', $request->product_id)
         ->first();
 
@@ -224,8 +224,8 @@ if (!empty($borrower->borrowerThreshold) &&
             ? $request->loan_amount 
             : $adjustedLoanAmount;  
 
-        $chargeUnit = $borrowerRule ? $borrowerRule->charge_unit : $tierCharge->charges_unit;
-        $chargeValue = $borrowerRule ? $borrowerRule->charge_value : $tierCharge->charges_value;
+        $chargeUnit = $applicantRule ? $applicantRule->charge_unit : $tierCharge->charges_unit;
+        $chargeValue = $applicantRule ? $applicantRule->charge_value : $tierCharge->charges_value;
 
         $chargeAmount = $chargeUnit === 'percentage'
             ? $baseAmount * ($chargeValue / 100)
@@ -285,7 +285,7 @@ if (!empty($borrower->borrowerThreshold) &&
         $outstandingAmount = $adjustedLoanAmount;
 
         $transaction = Transaction::create([
-            'borrower_id' => $borrower->id,
+            'applicant_id' => $applicant->id,
             'product_id' => $product->id,
             'plan_id' => $plan->id,
             'status' => "disbursed",
@@ -344,7 +344,7 @@ if (!empty($borrower->borrowerThreshold) &&
             ]);
         }
 
-        $borrower->creditLimit->update([
+        $applicant->creditLimit->update([
             'available_limit' => $availableLimit - $adjustedLoanAmount,
         ]);
 
@@ -369,23 +369,23 @@ public function calculateTransaction(Request $request)
         'order_number' => 'required|unique:transactions,order_number',
         'plan_id' => 'required|exists:product_plans,id',
         'product_id' => 'required|exists:products,id',
-        'borrower_id' => 'required|exists:borrowers,id',
+        'applicant_id' => 'required|exists:applicants,id',
     ]);
 
     try {
-        $borrower = Borrower::with(['creditLimit', 'financingPolicy', 'products', 'borrowerThreshold'])->findOrFail($request->borrower_id);
+        $applicant = Applicant::with(['creditLimit', 'financingPolicy', 'products', 'applicantThreshold'])->findOrFail($request->applicant_id);
 
-        if (!$borrower->is_active) {
-            return response()->json(['message' => 'Transaction failed: Borrower is disabled.'], 403);
+        if (!$applicant->is_active) {
+            return response()->json(['message' => 'Transaction failed: Applicant is disabled.'], 403);
         }
 
-        if (!$borrower->products->contains('id', $request->product_id)) {
-            return response()->json(['message' => 'Transaction failed: Borrower cannot avail this product at this time.'], 403);
+        if (!$applicant->products->contains('id', $request->product_id)) {
+            return response()->json(['message' => 'Transaction failed: Applicant cannot avail this product at this time.'], 403);
         }
 
-        $financingPercentage = $borrower->financingPolicy->financing_percentage ?? 100;
+        $financingPercentage = $applicant->financingPolicy->financing_percentage ?? 100;
         $adjustedLoanAmount = $request->loan_amount * ($financingPercentage / 100);
-        if ($adjustedLoanAmount > ($borrower->creditLimit->available_limit ?? 0)) {
+        if ($adjustedLoanAmount > ($applicant->creditLimit->available_limit ?? 0)) {
             return response()->json(['message' => 'Transaction failed: Adjusted loan amount exceeds available credit limit.'], 422);
         }
 
@@ -416,27 +416,27 @@ public function calculateTransaction(Request $request)
         $totalCharges = 0;
         $chargesData = [];
 
-        if (!empty($borrower->borrowerThreshold) && 
-            !empty($borrower->borrowerThreshold->order_threshold) &&
-            $request->loan_amount <= $borrower->borrowerThreshold->order_threshold) {
+        if (!empty($applicant->applicantThreshold) && 
+            !empty($applicant->applicantThreshold->order_threshold) &&
+            $request->loan_amount <= $applicant->applicantThreshold->order_threshold) {
 
-            // Apply borrower threshold charge
-            $chargeAmount = $borrower->borrowerThreshold->fixed_threshold_charges;
+            // Apply Applicant threshold charge
+            $chargeAmount = $applicant->applicantThreshold->fixed_threshold_charges;
 
             $chargesData[] = [
                 'charge_amount' => $chargeAmount,
-                'charge_condition' => 'Borrower Threshold Charge',
+                'charge_condition' => 'Applicant Threshold Charge',
             ];
 
             $totalCharges += $chargeAmount;
 
         } 
-        // If borrower threshold exists but loan amount exceeds it → SKIP tier threshold, go to percentage-based charges
-        elseif (empty($borrower->borrowerThreshold) && 
+        // If Applicant threshold exists but loan amount exceeds it → SKIP tier threshold, go to percentage-based charges
+        elseif (empty($applicant->applicantThreshold) && 
                 !empty($tier->order_threshold) && 
                 $request->loan_amount <= $tier->order_threshold) {
 
-            // Apply tier threshold charge if borrower threshold is not set
+            // Apply tier threshold charge if Applicant threshold is not set
             $chargeAmount = $tier->fixed_threshold_charges;
 
             $chargesData[] = [
@@ -447,11 +447,11 @@ public function calculateTransaction(Request $request)
             $totalCharges += $chargeAmount;
         }
 
-        // If neither borrower nor tier threshold applies, OR borrower threshold exists but is exceeded → Use percentage-based calculation
-        if ((empty($borrower->borrowerThreshold) && (!empty($tier->order_threshold) && $request->loan_amount > $tier->order_threshold)) || (!empty($borrower->borrowerThreshold) && $request->loan_amount > $borrower->borrowerThreshold->order_threshold))
+        // If neither Applicant nor tier threshold applies, OR Applicant threshold exists but is exceeded → Use percentage-based calculation
+        if ((empty($applicant->applicantThreshold) && (!empty($tier->order_threshold) && $request->loan_amount > $tier->order_threshold)) || (!empty($applicant->applicantThreshold) && $request->loan_amount > $applicant->applicantThreshold->order_threshold))
         {
 
-            $borrowerRule = BorrowerProductRule::where('borrower_id', $borrower->id)
+            $applicantRule = ApplicantProductRule::where('applicant_id', $applicant->id)
                 ->where('product_id', $request->product_id)
                 ->first();
 
@@ -461,9 +461,9 @@ public function calculateTransaction(Request $request)
                     ? $request->loan_amount
                     : $adjustedLoanAmount;
 
-                // Use borrower-specific charge unit and value if a borrower rule exists, otherwise use default tier values
-                $chargeUnit = $borrowerRule ? $borrowerRule->charge_unit : $tierCharge->charges_unit;
-                $chargeValue = $borrowerRule ? $borrowerRule->charge_value : $tierCharge->charges_value;
+                // Use Applicant-specific charge unit and value if a Applicant rule exists, otherwise use default tier values
+                $chargeUnit = $applicantRule ? $applicantRule->charge_unit : $tierCharge->charges_unit;
+                $chargeValue = $applicantRule ? $applicantRule->charge_value : $tierCharge->charges_value;
 
                 $chargeAmount = $chargeUnit === 'percentage'
                     ? $baseAmount * ($chargeValue / 100)

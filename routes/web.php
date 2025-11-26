@@ -19,11 +19,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('Mercado_financing_tncs', function () {
-    return view('TCs.Mercado_financing_tncs');
-});
-
-
 Route::get('/sync', function () {
     foreach (config('permission.permission_slugs') as $slug) {
         if (!empty($slug)) {

@@ -3,18 +3,18 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\BulkBorrowersRequest;
-use App\Http\Requests\BorrowerRequest;
-use App\Http\Resources\V1\BorrowerResource;
-use App\Http\Resources\V1\BorrowerCollection;
+use App\Http\Requests\BulkApplicantsRequest;
+use App\Http\Requests\ApplicantRequest;
+use App\Http\Resources\V1\ApplicantResource;
+use App\Http\Resources\V1\ApplicantCollection;
 use App\Models\CreditLimit;
 use App\Models\Transaction;
-use App\Models\BorrowerThreshold;
-use App\Models\BorrowerFinancingPolicy;
-use App\Models\BorrowerProductRule;
+use App\Models\ApplicantThreshold;
+use App\Models\ApplicantFinancingPolicy;
+use App\Models\ApplicantProductRule;
 use App\Models\OFACNACTA;
-use App\Models\Borrower;
-use App\Filters\V1\BorrowerFilter;
+use App\Models\Applicant;
+use App\Filters\V1\ApplicantFilter;
 use Illuminate\Http\Request;
 use App\Models\CreditEngineShipperInfo;
 use App\Models\CreditEngineShipperKyc;
@@ -23,14 +23,14 @@ use App\Models\CreditEngineShipperCreditScore;
 use Illuminate\Support\Facades\Http;
 use DB;
 
-class BorrowerController extends Controller
+class ApplicantController extends Controller
 {
 
     public function index(Request $request)
 {
-    $filter = new BorrowerFilter();
+    $filter = new ApplicantFilter();
 
-    $query = Borrower::with([
+    $query = Applicant::with([
         'products.productTiers',
         'creditLimit',
         'financingPolicy',
@@ -39,16 +39,16 @@ class BorrowerController extends Controller
         'creditEngineShipperPricing',
         'creditEngineShipperCreditScore',
         'ofacNacta',
-        'borrowerThreshold',
+        'applicantThreshold',
         'ProductRules' // Add this line
     ]);
 
-    $borrowers = $filter->filter($query, $request);
+    $applicants = $filter->filter($query, $request);
 
-    return new BorrowerCollection($borrowers);
+    return new ApplicantCollection($applicants);
 }
 
-    public function addBorrower(BorrowerRequest $request)
+    public function addApplicant(ApplicantRequest $request)
 {
     DB::beginTransaction();
 
@@ -57,20 +57,20 @@ class BorrowerController extends Controller
         $validatedData = $request->validated();
         $validatedData['status'] = 0;
 
-        $borrower = Borrower::create($validatedData);
+        $applicant = Applicant::create($validatedData);
 
         // Base URL, endpoints, and headers
         // $baseUrl = config('credit_engine.base_url');
         // $ofacNactaUrl = config('credit_engine.ofac_nacta_url');
         // $endpoints = config('credit_engine.endpoints');
         // $headers = config('credit_engine.headers');
-        // $shipperId = $borrower->shipper_id;
+        // $shipperId = $applicant->shipper_id;
 
         // // Fetch and save Shipper Info
         // $shipperInfoResponse = Http::withHeaders($headers)->get($baseUrl . $shipperId . $endpoints['info']);
         // CreditEngineShipperInfo::create([
         //     'shipper_id' => $shipperId,
-        //     'borrower_id' => $borrower->id,
+        //     'applicant_id' => $applicant->id,
         //     'data' => $shipperInfoResponse->json(),
         // ]);
 
@@ -78,7 +78,7 @@ class BorrowerController extends Controller
         // $shipperKycResponse = Http::withHeaders($headers)->get($baseUrl . $shipperId . $endpoints['kyc']);
         // CreditEngineShipperKyc::create([
         //     'shipper_id' => $shipperId,
-        //     'borrower_id' => $borrower->id,
+        //     'applicant_id' => $applicant->id,
         //     'data' => $shipperKycResponse->json(),
         // ]);
 
@@ -86,7 +86,7 @@ class BorrowerController extends Controller
         // $shipperPricingResponse = Http::withHeaders($headers)->get($baseUrl . $shipperId . $endpoints['pricing']);
         // CreditEngineShipperPricing::create([
         //     'shipper_id' => $shipperId,
-        //     'borrower_id' => $borrower->id,
+        //     'applicant_id' => $applicant->id,
         //     'data' => $shipperPricingResponse->json(),
         // ]);
 
@@ -94,20 +94,20 @@ class BorrowerController extends Controller
         // $shipperCreditScoreResponse = Http::withHeaders($headers)->get($baseUrl . $shipperId . $endpoints['credit_score']);
         // CreditEngineShipperCreditScore::create([
         //     'shipper_id' => $shipperId,
-        //     'borrower_id' => $borrower->id,
+        //     'applicant_id' => $applicant->id,
         //     'data' => $shipperCreditScoreResponse->json(),
         // ]);
 
         // // Fetch and save OFAC/NACTA matches
-        // $dob = $borrower->dob;
+        // $dob = $applicant->dob;
         // $yob = date('Y', strtotime($dob));
 
         // // Set headers and send a POST request
         // $ofacNactaResponse = Http::withHeaders([
         //     'Content-Type' => 'application/json',
         // ])->post($ofacNactaUrl, [
-        //     'cnic' => $borrower->cnic,
-        //     'name' => $borrower->first_name . ' ' . $borrower->last_name,
+        //     'cnic' => $applicant->cnic,
+        //     'name' => $applicant->first_name . ' ' . $applicant->last_name,
         //     'yob' => $yob,
         //     'country' => 'Pakistan',
         // ]);
@@ -115,60 +115,60 @@ class BorrowerController extends Controller
 
         // OFACNACTA::create([
         //     'shipper_id' => $shipperId,
-        //     'borrower_id' => $borrower->id,
+        //     'applicant_id' => $applicant->id,
         //     'data' => $ofacNactaResponse->json(),
         // ]);
 
         DB::commit();
 
-        return response()->json(['message' => 'Borrower added successfully', 'data' => $borrower], 201);
+        return response()->json(['message' => 'Applicant added successfully', 'data' => $applicant], 201);
     } catch (\Exception $e) {
         DB::rollBack();
-        return response()->json(['error' => 'Failed to add borrower: ' . $e->getMessage()], 500);
+        return response()->json(['error' => 'Failed to add applicant: ' . $e->getMessage()], 500);
     }
 }
 
 
 
 
-    public function addBorrowersBulk(BulkBorrowersRequest $request)
+    public function addApplicantsBulk(BulkApplicantsRequest $request)
 {
     DB::beginTransaction();
 
     try {
-        $borrowers = collect($request->borrowers)->map(function ($borrowerData) {
-            return Borrower::create($borrowerData);
+        $applicants = collect($request->applicants)->map(function ($applicantData) {
+            return Applicant::create($applicantData);
         });
 
         DB::commit();
 
         return response()->json([
-            'message' => 'Borrowers added successfully',
-            'data' => $borrowers,
+            'message' => 'Applicants added successfully',
+            'data' => $applicants,
         ], 201);
     } catch (\Exception $e) {
         DB::rollBack();
-        return response()->json(['error' => 'Failed to add borrowers: ' . $e->getMessage()], 500);
+        return response()->json(['error' => 'Failed to add Applicants: ' . $e->getMessage()], 500);
     }
 }
 
 
-    public function show(Borrower $borrower)
+    public function show(Applicant $applicant)
     {
-        return new BorrowerResource($borrower);
+        return new ApplicantResource($applicant);
     }
 
 
-   public function borrowerByWalletId(Request $request)
+   public function applicantByWalletId(Request $request)
 {
     // Validate wallet_id
     $request->validate([
-        'wallet_id' => 'required|string|exists:borrowers,wallet_id',
+        'wallet_id' => 'required|string|exists:applicants,wallet_id',
     ]);
 
     $walletId = $request->get('wallet_id');  // Retrieve wallet_id from query parameters
 
-    $borrower = Borrower::with([
+    $applicant = Applicant::with([
         'products.productTiers',
         'creditLimit',
         'financingPolicy',
@@ -179,26 +179,26 @@ class BorrowerController extends Controller
         'productRules',
     ])->where('wallet_id', $walletId)->first();
 
-    if (!$borrower) {
-        return response()->json(['message' => 'Borrower not found for the given wallet ID'], 404);
+    if (!$applicant) {
+        return response()->json(['message' => 'Applicant not found for the given wallet ID'], 404);
     }
 
-    return new BorrowerResource($borrower);  // Return borrower resource
+    return new ApplicantResource($applicant);  // Return applicant resource
 }
 
-    public function update(Borrower $borrower, BorrowerRequest $request)
+    public function update(Applicant $applicant, ApplicantRequest $request)
     {
-        DB::transaction(function () use ($borrower, $request) {
+        DB::transaction(function () use ($applicant, $request) {
             $validatedData = $request->validated();
 
-            // Update the borrower record
-            $borrower->update($validatedData);
+            // Update the applicant record
+            $applicant->update($validatedData);
         });
 
-        return new BorrowerResource($borrower);
+        return new ApplicantResource($applicant);
     }
 
- public function syncBorrowerProducts(Request $request, $borrowerId)
+ public function syncApplicantProducts(Request $request, $applicantId)
 {
     $request->validate([
         'product_ids' => 'array', 
@@ -209,10 +209,10 @@ class BorrowerController extends Controller
         'fixed_threshold_charges' => 'nullable|numeric|min:0', // Optional fixed threshold charges
     ]);
 
-    $borrower = Borrower::findOrFail($borrowerId);
+    $applicant = Applicant::findOrFail($applicantId);
 
     $productSyncData = [];
-    $borrowerRules = [];
+    $applicantRules = [];
     $productsWithNoRules = []; 
 
     foreach ($request->product_ids as $productData) {
@@ -223,8 +223,8 @@ class BorrowerController extends Controller
         $productSyncData[] = $productId;
 
         if (!is_null($chargeUnit) && !is_null($chargeValue)) {
-            $borrowerRules[] = [
-                'borrower_id' => $borrower->id,
+            $applicantRules[] = [
+                'applicant_id' => $applicant->id,
                 'product_id' => $productId,
                 'charge_unit' => $chargeUnit,
                 'charge_value' => $chargeValue,
@@ -237,33 +237,33 @@ class BorrowerController extends Controller
     }
 
     // Sync products
-    $borrower->products()->sync($productSyncData);
+    $applicant->products()->sync($productSyncData);
 
-    // Delete borrower product rules for products where rules are set to null
-    BorrowerProductRule::where('borrower_id', $borrower->id)
+    // Delete applicant product rules for products where rules are set to null
+    ApplicantProductRule::where('applicant_id', $applicant->id)
         ->whereIn('product_id', $productsWithNoRules)
         ->delete();
 
-    // Insert or update borrower product rules for products with custom charges
-    foreach ($borrowerRules as $rule) {
-        BorrowerProductRule::updateOrCreate(
-            ['borrower_id' => $rule['borrower_id'], 'product_id' => $rule['product_id']],
+    // Insert or update applicant product rules for products with custom charges
+    foreach ($applicantRules as $rule) {
+        ApplicantProductRule::updateOrCreate(
+            ['applicant_id' => $rule['applicant_id'], 'product_id' => $rule['product_id']],
             $rule
         );
     }
 
-    // Handle borrower threshold (insert/update if provided)
+    // Handle applicant threshold (insert/update if provided)
     // Check if both fields are explicitly set to NULL
     if ($request->has('order_threshold') && is_null($request->order_threshold) &&
         $request->has('fixed_threshold_charges') && is_null($request->fixed_threshold_charges)) {
 
         // Delete the threshold row if both values are null
-        BorrowerThreshold::where('borrower_id', $borrower->id)->delete();
+        ApplicantThreshold::where('applicant_id', $applicant->id)->delete();
 
     } else {
         // Otherwise, update or create the record
-        BorrowerThreshold::updateOrCreate(
-            ['borrower_id' => $borrower->id],
+        ApplicantThreshold::updateOrCreate(
+            ['applicant_id' => $applicant->id],
             [
                 'order_threshold' => $request->order_threshold,
                 'fixed_threshold_charges' => $request->fixed_threshold_charges,
@@ -274,8 +274,8 @@ class BorrowerController extends Controller
 
 
     return response()->json([
-        'message' => 'Borrower products and threshold synced successfully.',
-        'borrower' => $borrower->load('products', 'borrowerThreshold'), // Load the threshold data
+        'message' => 'Applicant products and threshold synced successfully.',
+        'applicant' => $applicant->load('products', 'applicantThreshold'), // Load the threshold data
     ], 200);
 }
 
@@ -283,40 +283,40 @@ class BorrowerController extends Controller
 {
     $validatedData = $request->validate([
         'status' => 'required|boolean', 
-        'wallet_id' => 'required|exists:borrowers,wallet_id',
+        'wallet_id' => 'required|exists:applicants,wallet_id',
     ]);
 
-    $updated = Borrower::where('wallet_id', $validatedData['wallet_id'])
+    $updated = Applicant::where('wallet_id', $validatedData['wallet_id'])
         ->update(['status' => $validatedData['status']]);
 
     if ($updated) {
         return response()->json([
-            'message' => 'Borrower status updated successfully.',
+            'message' => 'Applicant status updated successfully.',
         ], 200);
     }
 
     return response()->json([
-        'message' => 'Failed to update borrower status.',
+        'message' => 'Failed to update applicant status.',
     ], 500);
 }
 
     
-    public function assignCreditLimit(Request $request, Borrower $borrower)
+    public function assignCreditLimit(Request $request, Applicant $applicant)
 {
     // Validate the request
     $request->validate([
         'credit_limit' => 'required|numeric|min:1000'
     ]);
 
-    // Check if the borrower is active
-    if (!$borrower->is_active) {
+    // Check if the applicant is active
+    if (!$applicant->is_active) {
         return response()->json([
-            'message' => 'Cannot assign a credit limit to an inactive borrower.',
+            'message' => 'Cannot assign a credit limit to an inactive applicant.',
         ], 403);
     }
 
-    // Check if the borrower already has a credit limit record
-    $existingCreditLimit = CreditLimit::where('borrower_id', $borrower->id)->first();
+    // Check if the applicant already has a credit limit record
+    $existingCreditLimit = CreditLimit::where('applicant_id', $applicant->id)->first();
 
     // If a credit limit exists, calculate the available limit
     if ($existingCreditLimit) {
@@ -325,9 +325,9 @@ class BorrowerController extends Controller
         $newAvailableLimit = $request->credit_limit;
     }
 
-    // Create or update the credit limit for the borrower
+    // Create or update the credit limit for the applicant
     $creditLimit = CreditLimit::updateOrCreate(
-        ['borrower_id' => $borrower->id], // Match by borrower_id
+        ['applicant_id' => $applicant->id], // Match by applicant_id
         [
             'credit_limit' => $request->credit_limit,
             'available_limit' => $newAvailableLimit,
@@ -343,23 +343,23 @@ class BorrowerController extends Controller
 }
 
 
-public function assignFinancingPolicy(Request $request, Borrower $borrower)
+public function assignFinancingPolicy(Request $request, Applicant $applicant)
 {
     // Validate the request
     $request->validate([
         'financing_percentage' => 'required|numeric|min:0|max:100', // Must be a valid percentage
     ]);
 
-    // Check if the borrower is active
-    if (!$borrower->is_active) {
+    // Check if the applicant is active
+    if (!$applicant->is_active) {
         return response()->json([
-            'message' => 'Cannot assign a financing policy to an inactive borrower.',
+            'message' => 'Cannot assign a financing policy to an inactive applicant.',
         ], 403);
     }
 
-    // Create or update the financing policy for the borrower
-    $financingPolicy = BorrowerFinancingPolicy::updateOrCreate(
-        ['borrower_id' => $borrower->id], // Match by borrower_id
+    // Create or update the financing policy for the applicant
+    $financingPolicy = ApplicantFinancingPolicy::updateOrCreate(
+        ['applicant_id' => $applicant->id], // Match by applicant_id
         [
             'financing_percentage' => $request->financing_percentage,
             'updated_at' => now(), // Log the update timestamp
@@ -378,13 +378,13 @@ public function assignFinancingPolicy(Request $request, Borrower $borrower)
     public function getLoanDetails(Request $request)
     {
         $request->validate([
-            'wallet_id' => 'required|exists:borrowers,wallet_id',
+            'wallet_id' => 'required|exists:applicants,wallet_id',
         ]);
 
-        $borrower = Borrower::where('wallet_id', $request->wallet_id)->firstOrFail();
+        $applicant = Applicant::where('wallet_id', $request->wallet_id)->firstOrFail();
 
         $transactions = Transaction::with(['installments'])
-            ->where('borrower_id', $borrower->id)
+            ->where('applicant_id', $applicant->id)
             ->where('status', 'disbursed')
             ->orderByDesc('created_at')
             ->get();
@@ -398,12 +398,12 @@ public function assignFinancingPolicy(Request $request, Borrower $borrower)
     public function getLoanDetailsListing(Request $request)
     {
         $request->validate([
-            'wallet_id' => 'required|exists:borrowers,wallet_id',
+            'wallet_id' => 'required|exists:applicants,wallet_id',
         ]);
 
-        $borrower = Borrower::where('wallet_id', $request->wallet_id)->firstOrFail();
+        $applicant = Applicant::where('wallet_id', $request->wallet_id)->firstOrFail();
 
-        $transactions = Transaction::where('borrower_id', $borrower->id)
+        $transactions = Transaction::where('applicant_id', $applicant->id)
             ->where('created_at', '>=', now()->subDays(30))
             ->orderByDesc('created_at')
             ->get();
@@ -417,30 +417,30 @@ public function assignFinancingPolicy(Request $request, Borrower $borrower)
     public function refreshOfacNacta(Request $request)
 {
     $request->validate([
-        'borrower_id' => 'required|exists:borrowers,id',
+        'applicant_id' => 'required|exists:applicants,id',
     ]);
 
     try {
-        $borrower = Borrower::findOrFail($request->borrower_id);
+        $applicant = Applicant::findOrFail($request->applicant_id);
 
         // OFAC/NACTA URL and configuration
         $ofacNactaUrl = config('credit_engine.ofac_nacta_url');
-        $yob = date('Y', strtotime($borrower->dob));
+        $yob = date('Y', strtotime($applicant->dob));
 
         // Make the API call
         $ofacNactaResponse = Http::withHeaders([
             'Content-Type' => 'application/json',
         ])->post($ofacNactaUrl, [
-            'cnic' => $borrower->cnic,
-            'name' => $borrower->first_name . ' ' . $borrower->last_name,
+            'cnic' => $applicant->cnic,
+            'name' => $applicant->first_name . ' ' . $applicant->last_name,
             'yob' => $yob,
             'country' => 'Pakistan',
         ]);
 
         // Update or create OFACNACTA record
         $ofacNacta = OFACNACTA::updateOrCreate(
-            ['borrower_id' => $borrower->id],
-            ['shipper_id' => $borrower->shipper_id, 'data' => $ofacNactaResponse->json()]
+            ['applicant_id' => $applicant->id],
+            ['shipper_id' => $applicant->shipper_id, 'data' => $ofacNactaResponse->json()]
         );
 
         return response()->json(['message' => 'OFAC NACTA refreshed successfully', 'data' => $ofacNacta], 200);
@@ -453,24 +453,24 @@ public function assignFinancingPolicy(Request $request, Borrower $borrower)
     public function refreshCreditEngineShipperCreditScore(Request $request)
 {
     $request->validate([
-        'borrower_id' => 'required|exists:borrowers,id',
+        'applicant_id' => 'required|exists:applicants,id',
     ]);
 
     try {
 
-        $borrower = Borrower::findOrFail($request->borrower_id);
+        $applicant = Applicant::findOrFail($request->applicant_id);
 
 
         $baseUrl = config('credit_engine.base_url');
         $endpoints = config('credit_engine.endpoints');
         $headers = config('credit_engine.headers');
-        $shipperId = $borrower->shipper_id;
+        $shipperId = $applicant->shipper_id;
 
         $shipperCreditScoreResponse = Http::withHeaders($headers)->get($baseUrl . $shipperId . $endpoints['credit_score']);
 
         $shipperCreditScore = CreditEngineShipperCreditScore::updateOrCreate(
-            ['borrower_id' => $borrower->id],
-            ['shipper_id' => $borrower->shipper_id, 'data' => $shipperCreditScoreResponse->json()]
+            ['applicant_id' => $applicant->id],
+            ['shipper_id' => $applicant->shipper_id, 'data' => $shipperCreditScoreResponse->json()]
         );
 
         return response()->json(['message' => 'Credit Score refreshed successfully', 'data' => $shipperCreditScore], 200);
@@ -482,24 +482,24 @@ public function assignFinancingPolicy(Request $request, Borrower $borrower)
     public function refreshCreditEngineShipperInfo(Request $request)
 {
     $request->validate([
-        'borrower_id' => 'required|exists:borrowers,id',
+        'applicant_id' => 'required|exists:applicants,id',
     ]);
 
     try {
 
-        $borrower = Borrower::findOrFail($request->borrower_id);
+        $applicant = Applicant::findOrFail($request->applicant_id);
 
 
         $baseUrl = config('credit_engine.base_url');
         $endpoints = config('credit_engine.endpoints');
         $headers = config('credit_engine.headers');
-        $shipperId = $borrower->shipper_id;
+        $shipperId = $applicant->shipper_id;
 
         $shipperInfoResponse = Http::withHeaders($headers)->get($baseUrl . $shipperId . $endpoints['info']);
 
         $shipperInfo = CreditEngineShipperInfo::updateOrCreate(
-            ['borrower_id' => $borrower->id],
-            ['shipper_id' => $borrower->shipper_id, 'data' => $shipperInfoResponse->json()]
+            ['applicant_id' => $applicant->id],
+            ['shipper_id' => $applicant->shipper_id, 'data' => $shipperInfoResponse->json()]
         );
 
         return response()->json(['message' => 'Shipper info refreshed successfully', 'data' => $shipperInfo], 200);
@@ -511,23 +511,23 @@ public function assignFinancingPolicy(Request $request, Borrower $borrower)
     public function refreshCreditEngineShipperKyc(Request $request)
 {
     $request->validate([
-        'borrower_id' => 'required|exists:borrowers,id',
+        'applicant_id' => 'required|exists:applicants,id',
     ]);
 
     try {
 
-        $borrower = Borrower::findOrFail($request->borrower_id);
+        $applicant = Applicant::findOrFail($request->applicant_id);
 
         $baseUrl = config('credit_engine.base_url');
         $endpoints = config('credit_engine.endpoints');
         $headers = config('credit_engine.headers');
-        $shipperId = $borrower->shipper_id;
+        $shipperId = $applicant->shipper_id;
 
         $shipperKycResponse = Http::withHeaders($headers)->get($baseUrl . $shipperId . $endpoints['kyc']);
 
         $shipperKyc = CreditEngineShipperKyc::updateOrCreate(
-            ['borrower_id' => $borrower->id],
-            ['shipper_id' => $borrower->shipper_id, 'data' => $shipperKycResponse->json()]
+            ['applicant_id' => $applicant->id],
+            ['shipper_id' => $applicant->shipper_id, 'data' => $shipperKycResponse->json()]
         );
 
         return response()->json(['message' => 'Shipper kyc refreshed successfully', 'data' => $shipperKyc], 200);
@@ -539,23 +539,23 @@ public function assignFinancingPolicy(Request $request, Borrower $borrower)
     public function refreshCreditEngineShipperPricing(Request $request)
 {
     $request->validate([
-        'borrower_id' => 'required|exists:borrowers,id',
+        'applicant_id' => 'required|exists:applicants,id',
     ]);
 
     try {
 
-        $borrower = Borrower::findOrFail($request->borrower_id);
+        $applicant = Applicant::findOrFail($request->applicant_id);
 
         $baseUrl = config('credit_engine.base_url');
         $endpoints = config('credit_engine.endpoints');
         $headers = config('credit_engine.headers');
-        $shipperId = $borrower->shipper_id;
+        $shipperId = $applicant->shipper_id;
 
         $shipperPricingResponse = Http::withHeaders($headers)->get($baseUrl . $shipperId . $endpoints['pricing']);
 
         $shipperPricing = CreditEngineShipperPricing::updateOrCreate(
-            ['borrower_id' => $borrower->id],
-            ['shipper_id' => $borrower->shipper_id, 'data' => $shipperPricingResponse->json()]
+            ['applicant_id' => $applicant->id],
+            ['shipper_id' => $applicant->shipper_id, 'data' => $shipperPricingResponse->json()]
         );
 
         return response()->json(['message' => 'Shipper pricing refreshed successfully', 'data' => $shipperPricing], 200);
@@ -566,7 +566,7 @@ public function assignFinancingPolicy(Request $request, Borrower $borrower)
 
 public function getUniqueShipperNames()
 {
-    $uniqueShipperNames = Borrower::whereNotNull('shipper_name')
+    $uniqueShipperNames = Applicant::whereNotNull('shipper_name')
         ->distinct()
         ->pluck('shipper_name');
 

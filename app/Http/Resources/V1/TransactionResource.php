@@ -10,7 +10,7 @@ class TransactionResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'borrower_id' => $this->borrower_id,
+            'applicant_id' => $this->applicant_id,
             'product_id' => $this->product_id,
             'plan_id' => $this->plan_id,
             'loan_amount' => $this->loan_amount,
@@ -22,14 +22,14 @@ class TransactionResource extends JsonResource
             'outstanding_amount' => $this->outstanding_amount,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'borrower' => $this->borrower ? [
-                'id' => $this->borrower->id,
-                'first_name' => $this->borrower->first_name,
-                'last_name' => $this->borrower->last_name,
-                'cnic' => $this->borrower->cnic,
-                'mobile_no' => $this->borrower->mobile_no,
-                'email' => $this->borrower->email,
-                'status' => $this->borrower->status,
+            'applicant' => $this->applicant ? [
+                'id' => $this->applicant->id,
+                'first_name' => $this->applicant->first_name,
+                'last_name' => $this->applicant->last_name,
+                'cnic' => $this->applicant->cnic,
+                'mobile_no' => $this->applicant->mobile_no,
+                'email' => $this->applicant->email,
+                'status' => $this->applicant->status,
             ] : null,
             'charges' => $this->charges->map(function ($charge) {
                 return [

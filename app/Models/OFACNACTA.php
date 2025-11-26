@@ -15,7 +15,7 @@ class OFACNACTA extends Model
 
     protected $fillable = [
         'shipper_id',
-        'borrower_id',
+        'applicant_id',
         'data',
     ];
 
@@ -24,10 +24,10 @@ class OFACNACTA extends Model
     ];
 
     /**
-     * Relationship with Borrower.
+     * Relationship with applicant.
      */
-    public function borrower()
+    public function applicant()
     {
-        return $this->belongsTo(Borrower::class);
+        return $this->belongsTo(Applicant::class);
     }
 }

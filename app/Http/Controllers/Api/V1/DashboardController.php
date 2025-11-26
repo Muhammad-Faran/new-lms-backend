@@ -5,14 +5,14 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Transaction;
-use App\Models\Borrower;
+use App\Models\Applicant;
 
 class DashboardController extends Controller
 {
     public function getStats(Request $request)
     {
-        // Exclude specific borrower IDs (safe for future updates)
-        $excludedBorrowerIds = [1]; // Add more IDs as needed
+        // Exclude specific applicant IDs (safe for future updates)
+        $excludedApplicantIds = [1]; // Add more IDs as needed
 
         // Retrieve filters from the request
         $fromDate = $request->input('from_date');
@@ -22,9 +22,9 @@ class DashboardController extends Controller
         // Base Transaction Query
         $baseQuery = Transaction::query();
 
-        // Ensure transactions belong to borrowers who are NOT in the exclusion list
-        $baseQuery->whereHas('borrower', function ($query) use ($excludedBorrowerIds, $shipperName) {
-            $query->whereNotIn('id', $excludedBorrowerIds);
+        // Ensure transactions belong to applicants who are NOT in the exclusion list
+        $baseQuery->whereHas('applicant', function ($query) use ($excludedApplicantIds, $shipperName) {
+            $query->whereNotIn('id', $excludedApplicantIds);
 
             if ($shipperName) {
                 $query->where('shipper_name', 'LIKE', "%$shipperName%");
@@ -57,7 +57,7 @@ class DashboardController extends Controller
         $totalRevenue = (clone $transactionQuery)->sum('total_charges');
 
         // Total number of shippers
-        $totalShippers = Borrower::whereNotIn('id', $excludedBorrowerIds)
+        $totalShippers = Applicant::whereNotIn('id', $excludedApplicantIds)
             ->when($shipperName, function ($query) use ($shipperName) {
                 return $query->where('shipper_name', 'LIKE', "%$shipperName%");
             })
@@ -65,7 +65,7 @@ class DashboardController extends Controller
 
         // Total active shippers in the last 3 months
         $threeMonthsAgo = now()->subMonths(3);
-        $totalActiveShippers = Borrower::whereNotIn('id', $excludedBorrowerIds)
+        $totalActiveShippers = Applicant::whereNotIn('id', $excludedApplicantIds)
             ->when($shipperName, function ($query) use ($shipperName) {
                 return $query->where('shipper_name', 'LIKE', "%$shipperName%");
             })

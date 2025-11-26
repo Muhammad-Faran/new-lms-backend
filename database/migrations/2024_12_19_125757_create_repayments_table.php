@@ -15,7 +15,7 @@ return new class extends Migration
         $table->id();
         $table->foreignId('transaction_id')->constrained('transactions')->onDelete('cascade');
         $table->foreignId('installment_id')->constrained('transaction_installments')->onDelete('cascade');
-        $table->foreignId('borrower_id')->constrained('borrowers')->onDelete('cascade');
+        $table->foreignId('applicant_id')->constrained('applicants')->onDelete('cascade');
         $table->decimal('amount', 15, 2);
         $table->timestamp('paid_at')->nullable();
         $table->string('status')->default('paid'); // 'paid', 'partial', 'failed'

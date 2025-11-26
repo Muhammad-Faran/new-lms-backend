@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('borrowers', function (Blueprint $table) {
+        Schema::table('applicants', function (Blueprint $table) {
             $table->unsignedBigInteger('shipper_id')->nullable()->after('wallet_id');
         });
     }
@@ -21,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('borrowers', function (Blueprint $table) {
+        Schema::table('applicants', function (Blueprint $table) {
             $table->dropColumn('shipper_id');
         });
     }

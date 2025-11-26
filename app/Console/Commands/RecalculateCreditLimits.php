@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\Borrower;
+use App\Models\Applicant;
 use App\Models\Transaction;
 use App\Models\CreditLimit;
 use DB;
@@ -22,7 +22,7 @@ class RecalculateCreditLimits extends Command
      *
      * @var string
      */
-    protected $description = 'Recalculate and update available credit limits for all borrowers based on disbursed transactions';
+    protected $description = 'Recalculate and update available credit limits for all applicants based on disbursed transactions';
 
     /**
      * Execute the console command.
@@ -31,25 +31,25 @@ class RecalculateCreditLimits extends Command
     {
         $this->info('Starting credit limit recalculation...');
 
-        // Fetch all active borrowers with enabled credit limits
-        $borrowers = Borrower::where('status', 1)
+        // Fetch all active applicants with enabled credit limits
+        $applicants = Applicant::where('status', 1)
             ->whereHas('creditLimit', function ($query) {
-                $query->where('status', 'active'); // Only borrowers with active credit limits
+                $query->where('status', 'active'); // Only applicants with active credit limits
             })
             ->get();
 
-        $this->info('Processing ' . $borrowers->count() . ' borrowers...');
+        $this->info('Processing ' . $applicants->count() . ' applicants...');
 
-        DB::transaction(function () use ($borrowers) {
-            foreach ($borrowers as $borrower) {
-                $creditLimit = $borrower->creditLimit;
+        DB::transaction(function () use ($applicants) {
+            foreach ($applicants as $applicant) {
+                $creditLimit = $applicant->creditLimit;
 
                 if (!$creditLimit) {
                     continue; // Skip if no credit limit exists
                 }
 
                 // Sum of only disbursed transactions (excluding repaid/completed)
-                $totalDisbursed = Transaction::where('borrower_id', $borrower->id)
+                $totalDisbursed = Transaction::where('applicant_id', $applicant->id)
                     ->where('status', 'disbursed') // Only disbursed transactions
                     ->sum('loan_amount');
 
@@ -59,7 +59,7 @@ class RecalculateCreditLimits extends Command
                 // Update available credit limit
                 $creditLimit->update(['available_limit' => $newAvailableLimit]);
 
-                $this->info("Updated Borrower ID: {$borrower->id}, New Available Limit: {$newAvailableLimit}");
+                $this->info("Updated applicant ID: {$applicant->id}, New Available Limit: {$newAvailableLimit}");
             }
         });
 

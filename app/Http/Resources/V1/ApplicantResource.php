@@ -4,7 +4,7 @@ namespace App\Http\Resources\V1;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class BorrowerResource extends JsonResource
+class ApplicantResource extends JsonResource
 {
     public function toArray($request)
     {
@@ -30,7 +30,7 @@ class BorrowerResource extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'products' => $this->products->map(function ($product) {
-                $borrowerRule = $this->productRules->firstWhere('product_id', $product->id);
+                $applicantRule = $this->productRules->firstWhere('product_id', $product->id);
                 $productTier = $product->productTiers->first(); // Assuming you want the first product tier
 
                 return [
@@ -38,10 +38,10 @@ class BorrowerResource extends JsonResource
                     'name' => $product->name,
                     'code' => $product->code,
                     'eligibility_criteria' => $product->eligibility_criteria,
-                    'charge_unit' => $borrowerRule?->charge_unit,
-                    'charge_value' => $borrowerRule?->charge_value,
-                    'order_threshold' => $this->borrowerThreshold?->order_threshold ?? $productTier?->order_threshold,
-                    'fixed_threshold_charges' => $this->borrowerThreshold?->fixed_threshold_charges ?? $productTier?->fixed_threshold_charges,
+                    'charge_unit' => $applicantRule?->charge_unit,
+                    'charge_value' => $applicantRule?->charge_value,
+                    'order_threshold' => $this->applicantThreshold?->order_threshold ?? $productTier?->order_threshold,
+                    'fixed_threshold_charges' => $this->applicantThreshold?->fixed_threshold_charges ?? $productTier?->fixed_threshold_charges,
 
                     'plans' => $product->productPlans->map(function ($plan) {
                         return [

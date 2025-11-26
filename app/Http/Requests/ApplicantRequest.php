@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class BorrowerRequest extends FormRequest
+class ApplicantRequest extends FormRequest
 {
     public function authorize()
     {
@@ -21,13 +21,13 @@ class BorrowerRequest extends FormRequest
                 'required',
                 'string',
                 'max:15',
-                Rule::unique('borrowers', 'cnic'),
+                Rule::unique('applicants', 'cnic'),
             ],
             'wallet_id' => [
                 'required',
                 'string',
                 'max:15',
-                Rule::unique('borrowers', 'wallet_id'),
+                Rule::unique('applicants', 'wallet_id'),
             ],
             'shipper_id' => [
                 'required',
@@ -45,13 +45,13 @@ class BorrowerRequest extends FormRequest
                 'required',
                 'string',
                 'max:15',
-                Rule::unique('borrowers', 'mobile_no'),
+                Rule::unique('applicants', 'mobile_no'),
             ],
             'email' => [
                 'nullable',
                 'email',
                 'max:100',
-                Rule::unique('borrowers', 'email'),
+                Rule::unique('applicants', 'email'),
             ],
             'father_name' => 'nullable|string|max:100',
             'mother_name' => 'nullable|string|max:100',
@@ -61,34 +61,34 @@ class BorrowerRequest extends FormRequest
         ];
 
         if (in_array($this->method(), ['PUT', 'PATCH'])) {
-            $borrower = $this->route()->parameter('borrower'); // Get the borrower from the route
-            // Update unique rules to ignore the current borrower
+            $applicant = $this->route()->parameter('applicant'); // Get the applicant from the route
+            // Update unique rules to ignore the current applicant
             $rules['cnic'] = [
                 'required',
                 'string',
                 'max:15',
-                Rule::unique('borrowers', 'cnic')->ignore($borrower->id),
+                Rule::unique('applicants', 'cnic')->ignore($applicant->id),
             ];
 
             $rules['wallet_id'] = [
                 'required',
                 'string',
                 'max:15',
-                Rule::unique('borrowers', 'wallet_id')->ignore($borrower->id),
+                Rule::unique('applicants', 'wallet_id')->ignore($applicant->id),
             ];
 
             $rules['mobile_no'] = [
                 'required',
                 'string',
                 'max:15',
-                Rule::unique('borrowers', 'mobile_no')->ignore($borrower->id),
+                Rule::unique('applicants', 'mobile_no')->ignore($applicant->id),
             ];
 
             $rules['email'] = [
                 'nullable',
                 'email',
                 'max:100',
-                Rule::unique('borrowers', 'email')->ignore($borrower->id),
+                Rule::unique('applicants', 'email')->ignore($applicant->id),
             ];
         }
 

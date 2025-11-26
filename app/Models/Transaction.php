@@ -7,13 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class Transaction extends Model
 {
     protected $fillable = [
-        'borrower_id', 'product_id', 'plan_id','order_number', 'loan_amount','order_amount', 
+        'applicant_id', 'product_id', 'plan_id','order_number', 'loan_amount','order_amount', 
         'total_charges', 'outstanding_amount','disbursed_amount', 'status'
     ];
 
-    public function borrower()
+    public function applicant()
     {
-        return $this->belongsTo(Borrower::class);
+        return $this->belongsTo(Applicant::class);
     }
 
     public function product()

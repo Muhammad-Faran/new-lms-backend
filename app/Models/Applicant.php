@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Traits\LogsModelChanges;
 
 
-class Borrower extends Model
+class Applicant extends Model
 {
     use HasFactory, LogsModelChanges;
 
@@ -33,17 +33,17 @@ class Borrower extends Model
 
      public function products()
     {
-        return $this->belongsToMany(Product::class, 'borrower_products')->withTimestamps();
+        return $this->belongsToMany(Product::class, 'applicant_products')->withTimestamps();
     }
 
-    public function borrowerThreshold()
+    public function applicantThreshold()
     {
-        return $this->hasOne(BorrowerThreshold::class);
+        return $this->hasOne(ApplicantThreshold::class);
     }
 
      public function productRules()
     {
-        return $this->hasMany(BorrowerProductRule::class);
+        return $this->hasMany(ApplicantProductRule::class);
     }
 
      public function creditLimit()
@@ -53,7 +53,7 @@ class Borrower extends Model
 
     public function financingPolicy()
     {
-        return $this->hasOne(BorrowerFinancingPolicy::class);
+        return $this->hasOne(ApplicantFinancingPolicy::class);
     }
 
     public function getIsActiveAttribute()
@@ -73,27 +73,27 @@ class Borrower extends Model
 
     public function creditEngineShipperInfo()
     {
-        return $this->hasOne(CreditEngineShipperInfo::class, 'borrower_id');
+        return $this->hasOne(CreditEngineShipperInfo::class, 'applicant_id');
     }
 
     public function ofacNacta()
     {
-        return $this->hasOne(OFACNACTA::class, 'borrower_id', 'id');
+        return $this->hasOne(OFACNACTA::class, 'applicant_id', 'id');
     }
 
     public function creditEngineShipperKyc()
     {
-        return $this->hasOne(CreditEngineShipperKyc::class, 'borrower_id');
+        return $this->hasOne(CreditEngineShipperKyc::class, 'applicant_id');
     }
 
     public function creditEngineShipperPricing()
     {
-        return $this->hasOne(CreditEngineShipperPricing::class, 'borrower_id');
+        return $this->hasOne(CreditEngineShipperPricing::class, 'applicant_id');
     }
 
     public function creditEngineShipperCreditScore()
     {
-        return $this->hasOne(CreditEngineShipperCreditScore::class, 'borrower_id');
+        return $this->hasOne(CreditEngineShipperCreditScore::class, 'applicant_id');
     }
 
 }
