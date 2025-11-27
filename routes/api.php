@@ -51,21 +51,21 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api\V1', 'm
         Route::patch('/products/{id}/updateStatus', [ProductController::class, 'updateStatus'])->can('update-product-status');
         Route::post('/addApplicant', [ApplicantController::class, 'addApplicant'])->can('add-Applicant')->middleware('api.log');
         Route::post('/addApplicantsBulk', [ApplicantController::class, 'addApplicantsBulk'])->can('add-Applicant')->middleware('api.log');
-        Route::get('/Applicant', [ApplicantController::class, 'ApplicantByWalletId'])->can('view-applicants');
-        Route::get('/Applicants', [ApplicantController::class, 'index'])->can('view-applicants');
-        Route::get('/Applicants/{Applicant}', [ApplicantController::class, 'show'])->can('view-applicants');
-        Route::put('/Applicants/{Applicant}', [ApplicantController::class, 'update'])->can('update-applicants');
-        Route::post('/Applicants/{Applicant}/products/sync', [ApplicantController::class, 'syncApplicantProducts'])->can('sync-Applicant-products');
-        Route::post('/Applicants/{Applicant}/assignCreditLimit', [ApplicantController::class, 'assignCreditLimit'])->can('assign-credit-limit');
-        Route::post('/Applicants/{Applicant}/assignFinancingPolicy', [ApplicantController::class, 'assignFinancingPolicy'])->can('assign-financing-policy');
-        Route::get('/Applicant/shipper-names', [ApplicantController::class, 'getUniqueShipperNames']);
+        Route::get('/applicant', [ApplicantController::class, 'ApplicantByWalletId'])->can('view-applicants');
+        Route::get('/applicants', [ApplicantController::class, 'index'])->can('view-applicants');
+        Route::get('/applicants/{Applicant}', [ApplicantController::class, 'show'])->can('view-applicants');
+        Route::put('/applicants/{Applicant}', [ApplicantController::class, 'update'])->can('update-applicants');
+        Route::post('/applicants/{Applicant}/products/sync', [ApplicantController::class, 'syncApplicantProducts'])->can('sync-Applicant-products');
+        Route::post('/applicants/{Applicant}/assignCreditLimit', [ApplicantController::class, 'assignCreditLimit'])->can('assign-credit-limit');
+        Route::post('/applicants/{Applicant}/assignFinancingPolicy', [ApplicantController::class, 'assignFinancingPolicy'])->can('assign-financing-policy');
+        Route::get('/applicant/shipper-names', [ApplicantController::class, 'getUniqueShipperNames']);
         Route::post('/refreshOfacNacta', [ApplicantController::class, 'refreshOfacNacta'])->can('refresh-ofac-nacta');
         Route::post('/refreshCreditEngineShipperCreditScore', [ApplicantController::class, 'refreshCreditEngineShipperCreditScore'])->can('refresh-credit-score');
         Route::post('/refreshCreditEngineShipperInfo', [ApplicantController::class, 'refreshCreditEngineShipperInfo'])->can('refresh-shipper-info');
         Route::post('/refreshCreditEngineShipperKyc', [ApplicantController::class, 'refreshCreditEngineShipperKyc'])->can('refresh-shipper-kyc');
         Route::post('/refreshCreditEngineShipperPricing', [ApplicantController::class, 'refreshCreditEngineShipperPricing'])->can('refresh-shipper-pricing');
 
-        Route::patch('/Applicants/updateStatus', [ApplicantController::class, 'updateStatus'])->can('update-applicant-status');
+        Route::patch('/applicants/updateStatus', [ApplicantController::class, 'updateStatus'])->can('update-applicant-status');
         Route::get('/credit-limit', [CreditLimitController::class, 'show'])->can('get-credit-limit');
 
         Route::get('/transactions', [TransactionController::class, 'index'])->can('view-transactions');
