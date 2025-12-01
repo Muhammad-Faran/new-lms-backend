@@ -23,21 +23,6 @@ class ApplicantRequest extends FormRequest
                 'max:15',
                 Rule::unique('applicants', 'cnic'),
             ],
-            'wallet_id' => [
-                'required',
-                'string',
-                'max:15',
-                Rule::unique('applicants', 'wallet_id'),
-            ],
-            'shipper_id' => [
-                'required',
-                'string',
-                'max:15',
-            ],
-            'shipper_name' => [
-                'required',
-                'string',
-            ],
             'cnic_front_image' => 'nullable|string',
             'cnic_back_image' => 'nullable|string',
             'cnic_issuance_date' => 'nullable|date',
@@ -68,13 +53,6 @@ class ApplicantRequest extends FormRequest
                 'string',
                 'max:15',
                 Rule::unique('applicants', 'cnic')->ignore($applicant->id),
-            ];
-
-            $rules['wallet_id'] = [
-                'required',
-                'string',
-                'max:15',
-                Rule::unique('applicants', 'wallet_id')->ignore($applicant->id),
             ];
 
             $rules['mobile_no'] = [

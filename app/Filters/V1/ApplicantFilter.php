@@ -9,8 +9,6 @@ class ApplicantFilter extends ApiFilter
     protected $searchFields = [
         'first_name',
         'last_name',
-        'shipper_name',
-        'wallet_id',
         'cnic',
         'mobile_no',
         'email'
@@ -19,7 +17,6 @@ class ApplicantFilter extends ApiFilter
     protected $searchTableFields = [
         'first_name',
         'last_name',
-        'wallet_id',
         'cnic',
         'mobile_no',
         'email'
@@ -34,9 +31,6 @@ class ApplicantFilter extends ApiFilter
         ['name' => 'ID', 'selector' => 'applicants.id'],
         ['name' => 'First Name', 'selector' => 'applicants.first_name'],
         ['name' => 'Last Name', 'selector' => 'applicants.last_name'],
-        ['name' => 'Wallet ID', 'selector' => 'applicants.wallet_id'],
-        ['name' => 'Shipper ID', 'selector' => 'applicants.shipper_id'],
-        ['name' => 'Shipper Name', 'selector' => 'applicants.shipper_name'],
         ['name' => 'CNIC', 'selector' => 'applicants.cnic'],
         ['name' => 'Mobile No', 'selector' => 'applicants.mobile_no'],
         ['name' => 'Email', 'selector' => 'applicants.email'],

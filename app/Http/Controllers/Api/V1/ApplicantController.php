@@ -34,10 +34,6 @@ class ApplicantController extends Controller
         'products.productTiers',
         'creditLimit',
         'financingPolicy',
-        'creditEngineShipperInfo',
-        'creditEngineShipperKyc',
-        'creditEngineShipperPricing',
-        'creditEngineShipperCreditScore',
         'ofacNacta',
         'applicantThreshold',
         'ProductRules' // Add this line
@@ -58,67 +54,6 @@ class ApplicantController extends Controller
         $validatedData['status'] = 0;
 
         $applicant = Applicant::create($validatedData);
-
-        // Base URL, endpoints, and headers
-        // $baseUrl = config('credit_engine.base_url');
-        // $ofacNactaUrl = config('credit_engine.ofac_nacta_url');
-        // $endpoints = config('credit_engine.endpoints');
-        // $headers = config('credit_engine.headers');
-        // $shipperId = $applicant->shipper_id;
-
-        // // Fetch and save Shipper Info
-        // $shipperInfoResponse = Http::withHeaders($headers)->get($baseUrl . $shipperId . $endpoints['info']);
-        // CreditEngineShipperInfo::create([
-        //     'shipper_id' => $shipperId,
-        //     'applicant_id' => $applicant->id,
-        //     'data' => $shipperInfoResponse->json(),
-        // ]);
-
-        // // Fetch and save Shipper KYC
-        // $shipperKycResponse = Http::withHeaders($headers)->get($baseUrl . $shipperId . $endpoints['kyc']);
-        // CreditEngineShipperKyc::create([
-        //     'shipper_id' => $shipperId,
-        //     'applicant_id' => $applicant->id,
-        //     'data' => $shipperKycResponse->json(),
-        // ]);
-
-        // // Fetch and save Shipper Pricing
-        // $shipperPricingResponse = Http::withHeaders($headers)->get($baseUrl . $shipperId . $endpoints['pricing']);
-        // CreditEngineShipperPricing::create([
-        //     'shipper_id' => $shipperId,
-        //     'applicant_id' => $applicant->id,
-        //     'data' => $shipperPricingResponse->json(),
-        // ]);
-
-        // // Fetch and save Shipper Credit Score
-        // $shipperCreditScoreResponse = Http::withHeaders($headers)->get($baseUrl . $shipperId . $endpoints['credit_score']);
-        // CreditEngineShipperCreditScore::create([
-        //     'shipper_id' => $shipperId,
-        //     'applicant_id' => $applicant->id,
-        //     'data' => $shipperCreditScoreResponse->json(),
-        // ]);
-
-        // // Fetch and save OFAC/NACTA matches
-        // $dob = $applicant->dob;
-        // $yob = date('Y', strtotime($dob));
-
-        // // Set headers and send a POST request
-        // $ofacNactaResponse = Http::withHeaders([
-        //     'Content-Type' => 'application/json',
-        // ])->post($ofacNactaUrl, [
-        //     'cnic' => $applicant->cnic,
-        //     'name' => $applicant->first_name . ' ' . $applicant->last_name,
-        //     'yob' => $yob,
-        //     'country' => 'Pakistan',
-        // ]);
-
-
-        // OFACNACTA::create([
-        //     'shipper_id' => $shipperId,
-        //     'applicant_id' => $applicant->id,
-        //     'data' => $ofacNactaResponse->json(),
-        // ]);
-
         DB::commit();
 
         return response()->json(['message' => 'Applicant added successfully', 'data' => $applicant], 201);
@@ -283,10 +218,10 @@ class ApplicantController extends Controller
 {
     $validatedData = $request->validate([
         'status' => 'required|boolean', 
-        'wallet_id' => 'required|exists:applicants,wallet_id',
+        'id' => 'required|exists:applicants,id',
     ]);
 
-    $updated = Applicant::where('wallet_id', $validatedData['wallet_id'])
+    $updated = Applicant::where('id', $validatedData['id'])
         ->update(['status' => $validatedData['status']]);
 
     if ($updated) {

@@ -49,12 +49,12 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api\V1', 'm
 		Route::post('/addProduct', [ProductController::class, 'addProduct'])->can('add-product');
 		Route::get('/products', [ProductController::class, 'index'])->can('view-products');
         Route::patch('/products/{id}/updateStatus', [ProductController::class, 'updateStatus'])->can('update-product-status');
-        Route::post('/addApplicant', [ApplicantController::class, 'addApplicant'])->can('add-Applicant')->middleware('api.log');
+        Route::post('/addApplicant', [ApplicantController::class, 'addApplicant'])->can('add-applicant')->middleware('api.log');
         Route::post('/addApplicantsBulk', [ApplicantController::class, 'addApplicantsBulk'])->can('add-Applicant')->middleware('api.log');
         Route::get('/applicant', [ApplicantController::class, 'ApplicantByWalletId'])->can('view-applicants');
         Route::get('/applicants', [ApplicantController::class, 'index'])->can('view-applicants');
-        Route::get('/applicants/{Applicant}', [ApplicantController::class, 'show'])->can('view-applicants');
-        Route::put('/applicants/{Applicant}', [ApplicantController::class, 'update'])->can('update-applicants');
+        Route::get('/applicants/{applicant}', [ApplicantController::class, 'show'])->can('view-applicants');
+        Route::put('/applicants/{applicant}', [ApplicantController::class, 'update'])->can('update-applicants');
         Route::post('/applicants/{Applicant}/products/sync', [ApplicantController::class, 'syncApplicantProducts'])->can('sync-Applicant-products');
         Route::post('/applicants/{Applicant}/assignCreditLimit', [ApplicantController::class, 'assignCreditLimit'])->can('assign-credit-limit');
         Route::post('/applicants/{Applicant}/assignFinancingPolicy', [ApplicantController::class, 'assignFinancingPolicy'])->can('assign-financing-policy');
