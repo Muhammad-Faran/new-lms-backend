@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('transaction_logs', function (Blueprint $table) {
+        Schema::table('application_logs', function (Blueprint $table) {
             // Add 'is_reversed' column after 'type'
             $table->boolean('is_reversed')->default(0)->after('type');
         });
@@ -22,7 +22,7 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('transaction_logs', function (Blueprint $table) {
+        Schema::table('application_logs', function (Blueprint $table) {
             // Remove 'is_reversed' column if rollback is needed
             $table->dropColumn('is_reversed');
         });

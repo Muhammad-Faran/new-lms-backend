@@ -215,7 +215,7 @@ class ApiFilter
     foreach ($this->relationSearchDropdownFields as $relationField) {
         $relationSearch = explode('.', $relationField);
         if (count($relationSearch) === 2) {
-            $relation = $relationSearch[0];  // e.g., "transaction"
+            $relation = $relationSearch[0];  // e.g., "application"
             $field = $relationSearch[1];     // e.g., "product_id"
 
             foreach ($search as $key => $value) {

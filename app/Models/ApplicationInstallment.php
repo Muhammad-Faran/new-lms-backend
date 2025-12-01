@@ -4,15 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class TransactionInstallment extends Model
+class ApplicationInstallment extends Model
 {
     protected $fillable = [
-        'transaction_id', 'amount', 'outstanding', 'due_date', 'status'
+        'application_id', 'amount', 'outstanding', 'due_date', 'status'
     ];
 
-    public function transaction()
+    public function application()
     {
-        return $this->belongsTo(Transaction::class);
+        return $this->belongsTo(Application::class);
     }
 
 	public function repayment()

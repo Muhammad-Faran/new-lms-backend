@@ -2,17 +2,18 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Repayment extends Model
+class ApplicationLog extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'application_id',
-        'installment_id',
-        'applicant_id',
+        'application_installment_id',
         'amount',
-        'paid_at',
-        'status',
+        'type',
     ];
 
     public function application()
@@ -20,14 +21,8 @@ class Repayment extends Model
         return $this->belongsTo(Application::class);
     }
 
-    public function installment()
+    public function applicationInstallment()
     {
         return $this->belongsTo(ApplicationInstallment::class);
     }
-
-    public function applicant()
-    {
-        return $this->belongsTo(Applicant::class);
-    }
 }
-

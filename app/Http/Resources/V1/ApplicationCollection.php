@@ -3,23 +3,14 @@
 namespace App\Http\Resources\V1;
 
 use Illuminate\Http\Resources\Json\ResourceCollection;
-use Carbon\Carbon;
 
-
-class OverdueLoanCollection extends ResourceCollection
+class ApplicationCollection extends ResourceCollection
 {
     public function toArray($request)
     {
         return $this->collection->map(function ($application) {
-             $overdueInstallment = $application->installments
-                ->where('due_date', '<', now())
-                ->where('status', 'unpaid')
-                ->sortBy('due_date')
-                ->first();
-
-            $dueDate = optional($overdueInstallment)->due_date;
-
             return [
+
                 'id' => $application->id,
                 'applicant_id' => $application->applicant_id,
                 'product_id' => $application->product_id,
@@ -31,11 +22,6 @@ class OverdueLoanCollection extends ResourceCollection
                 'disbursed_amount' => $application->disbursed_amount,
                 'outstanding_amount' => $application->outstanding_amount,
                 'status' => $application->status,
-                'days_overdue' => abs($dueDate
-                    ? now()->setTimezone('Asia/Karachi')->startOfDay()->diffInDays(
-                        Carbon::parse($dueDate)->setTimezone('Asia/Karachi')->startOfDay()
-                    )
-                    : null),
                 'next_due_date' => $application->next_due_date,
                 'created_at' => $application->created_at,
                 'updated_at' => $application->updated_at,

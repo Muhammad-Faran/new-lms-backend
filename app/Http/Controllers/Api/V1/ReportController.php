@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\TransactionInstallment;
+use App\Models\ApplicationInstallment;
 use App\Filters\V1\OverdueLoanFilter;
-use App\Models\Transaction;
+use App\Models\Application;
 use App\Http\Resources\V1\OverdueLoanCollection;
 use Illuminate\Http\Request;
 use App\Services\ExportService;
@@ -26,8 +26,8 @@ class ReportController extends Controller
      */
    public function getOverdueLoans(Request $request)
 {
-    // Fetch transactions where any of its installments are overdue and unpaid
-    $query = Transaction::with(['applicant', 'installments'])
+    // Fetch Applications where any of its installments are overdue and unpaid
+    $query = Application::with(['applicant', 'installments'])
         ->whereHas('installments', function ($query) {
             $query->where('due_date', '<', now()) // Overdue
                   ->where('status', 'unpaid'); // Only unpaid installments
@@ -47,8 +47,8 @@ public function exportOverdueLoans(Request $request)
 {
     $filter = new OverdueLoanFilter();
 
-    // Fetch transactions where any of its installments are overdue and unpaid
-    $query = Transaction::with(['applicant', 'installments'])
+    // Fetch Applications where any of its installments are overdue and unpaid
+    $query = Application::with(['applicant', 'installments'])
         ->whereHas('installments', function ($query) {
             $query->where('due_date', '<', now())
                   ->where('status', 'unpaid');
@@ -62,9 +62,9 @@ public function exportOverdueLoans(Request $request)
     }
 
     // Prepare data for export
-    $data = $overdueLoans->map(function ($transaction) {
+    $data = $overdueLoans->map(function ($application) {
         // Find the earliest overdue installment for due date reference
-        $overdueInstallment = $transaction->installments
+        $overdueInstallment = $application->installments
             ->where('due_date', '<', now())
             ->where('status', 'unpaid')
             ->sortBy('due_date')
@@ -73,10 +73,10 @@ public function exportOverdueLoans(Request $request)
             $dueDate = optional($overdueInstallment)->due_date;
 
         return [
-            'Applicant Name' => optional($transaction->applicant)->first_name . ' ' . optional($transaction->applicant)->last_name,
-            'Transaction ID' => $transaction->id,
-            'Amount' => $transaction->loan_amount,
-            'Date of Disbursement' => optional($transaction->created_at)->format('Y-m-d'),
+            'Applicant Name' => optional($application->applicant)->first_name . ' ' . optional($application->applicant)->last_name,
+            'Application ID' => $application->id,
+            'Amount' => $application->loan_amount,
+            'Date of Disbursement' => optional($application->created_at)->format('Y-m-d'),
             'Due Date' => optional($overdueInstallment)->due_date,
             'Days Overdue' => abs($dueDate
                     ? now()->setTimezone('Asia/Karachi')->startOfDay()->diffInDays(
@@ -87,11 +87,11 @@ public function exportOverdueLoans(Request $request)
     })->toArray();
 
     $headers = [
-        'Applicant Name', 'Transaction ID', 'Amount', 'Date of Disbursement', 'Due Date', 'Days Overdue'
+        'Applicant Name', 'Application ID', 'Amount', 'Date of Disbursement', 'Due Date', 'Days Overdue'
     ];
 
     // Use ExportService to create an Excel file
-    return $this->exportService->exportToExcel('overdue_transactions.xlsx', $data, $headers);
+    return $this->exportService->exportToExcel('overdue_applications.xlsx', $data, $headers);
 }
 
 }

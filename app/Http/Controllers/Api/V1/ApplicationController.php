@@ -5,18 +5,18 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\Transaction;
+use App\Models\Application;
 use App\Models\Product;
 use App\Models\ApplicantProductRule;
-use App\Models\TransactionLog;
+use App\Models\ApplicationLog;
 use App\Models\ProductPlan;
-use App\Http\Resources\V1\TransactionResource;
-use App\Http\Resources\V1\TransactionCollection;
-use App\Filters\V1\TransactionFilter;
+use App\Http\Resources\V1\ApplicationResource;
+use App\Http\Resources\V1\ApplicationCollection;
+use App\Filters\V1\ApplicationFilter;
 use App\Models\Applicant;
 use App\Services\ExportService;
 
-class TransactionController extends Controller
+class ApplicationController extends Controller
 {
     protected $exportService;
 
@@ -27,48 +27,48 @@ class TransactionController extends Controller
 
  public function index(Request $request)
     {
-        $filter = new TransactionFilter();
+        $filter = new ApplicationFilter();
 
-        $query = Transaction::with(['charges', 'installments', 'applicant', 'product']);
+        $query = Application::with(['charges', 'installments', 'applicant', 'product']);
 
-        $transactions = $filter->filter($query, $request);
+        $applications = $filter->filter($query, $request);
 
-        return new TransactionCollection($transactions);
+        return new ApplicationCollection($applications);
     }
 
-    public function show(Transaction $transaction)
+    public function show(Application $application)
     {
-        return new TransactionResource($transaction);
+        return new ApplicationResource($application);
     }
 
     public function export(Request $request)
 {
-    $filter = new TransactionFilter();
+    $filter = new ApplicationFilter();
 
-    $query = Transaction::with(['charges', 'installments', 'applicant', 'product']);
+    $query = Application::with(['charges', 'installments', 'applicant', 'product']);
 
     // Apply filters
-    $transactions = $filter->filter($query, $request);
+    $applications = $filter->filter($query, $request);
 
-    if ($transactions->isEmpty()) {
-        return response()->json(['message' => 'No transactions found for the given filters.'], 404);
+    if ($applications->isEmpty()) {
+        return response()->json(['message' => 'No applications found for the given filters.'], 404);
     }
 
     // Prepare data for export
-    $data = $transactions->map(function ($transaction) {
+    $data = $applications->map(function ($application) {
         return [
-            'Id' => $transaction->id,
-            'Applicant' => optional($transaction->applicant)->first_name . ' ' . optional($transaction->applicant)->last_name,
-            'Shipper' => optional($transaction->applicant)->shipper_name,
-            'Product' => optional($transaction->product)->name,
-            'Order Number' => $transaction->order_number,
-            'Order Amount' => $transaction->order_amount,
-            'Financing Amount' => $transaction->loan_amount,
-            'Total Charges' => $transaction->total_charges,
-            'Disbursed Amount' => $transaction->disbursed_amount,
-            'Due Date' => $transaction->next_due_date,
-            'Disbursement Date' => optional($transaction->created_at)->format('Y-m-d'),
-            'Status' => $transaction->status,
+            'Id' => $application->id,
+            'Applicant' => optional($application->applicant)->first_name . ' ' . optional($application->applicant)->last_name,
+            'Shipper' => optional($application->applicant)->shipper_name,
+            'Product' => optional($application->product)->name,
+            'Order Number' => $application->order_number,
+            'Order Amount' => $application->order_amount,
+            'Financing Amount' => $application->loan_amount,
+            'Total Charges' => $application->total_charges,
+            'Disbursed Amount' => $application->disbursed_amount,
+            'Due Date' => $application->next_due_date,
+            'Disbursement Date' => optional($application->created_at)->format('Y-m-d'),
+            'Status' => $application->status,
         ];
     })->toArray();
 
@@ -79,15 +79,15 @@ class TransactionController extends Controller
     ];
 
     // Use ExportService to create the Excel file
-    return $this->exportService->exportToExcel('transactions.xlsx', $data, $headers);
+    return $this->exportService->exportToExcel('applications.xlsx', $data, $headers);
 }
 
 
-public function initiateTransaction(Request $request)
+public function initiateApplication(Request $request)
 {
     $request->validate([
         'loan_amount' => 'required|numeric|min:1',
-        'order_number' => 'required|unique:transactions,order_number',
+        'order_number' => 'required|unique:applications,order_number',
         'plan_id' => 'required|exists:product_plans,id',
         'product_id' => 'required|exists:products,id',
         'applicant_id' => 'required|exists:applicants,id',
@@ -99,18 +99,18 @@ public function initiateTransaction(Request $request)
         $applicant = Applicant::with(['creditLimit', 'financingPolicy', 'products', 'applicantThreshold'])->findOrFail($request->applicant_id);
 
         if (!$applicant->is_active) {
-            return response()->json(['message' => 'Transaction failed: Applicant is disabled.'], 403);
+            return response()->json(['message' => 'Application failed: Applicant is disabled.'], 403);
         }
 
         if (in_array($applicant->id, [114, 809, 821, 822, 823]) && $request->loan_amount > 3100) {
             return response()->json([
-                'message' => 'Transaction failed: Order value threshold breached for this Applicant.'
+                'message' => 'Application failed: Order value threshold breached for this Applicant.'
             ], 422);
         }
 
 
         if (!$applicant->products->contains('id', $request->product_id)) {
-            return response()->json(['message' => 'Transaction failed: Applicant cannot avail this product at this time.'], 403);
+            return response()->json(['message' => 'Application failed: Applicant cannot avail this product at this time.'], 403);
         }
 
         $financingPercentage = $applicant->financingPolicy->financing_percentage ?? 100;
@@ -118,17 +118,17 @@ public function initiateTransaction(Request $request)
         $availableLimit = $applicant->creditLimit->available_limit ?? 0;
 
         if ($adjustedLoanAmount > $availableLimit) {
-            return response()->json(['message' => 'Transaction failed: Adjusted loan amount exceeds available credit limit.'], 422);
+            return response()->json(['message' => 'Application failed: Adjusted loan amount exceeds available credit limit.'], 422);
         }
 
         $product = Product::with('productPlans')->findOrFail($request->product_id);
         if (!$product->is_active) {
-            return response()->json(['message' => 'Transaction failed: Product is disabled.'], 403);
+            return response()->json(['message' => 'Application failed: Product is disabled.'], 403);
         }
 
 
         if (!$product->productPlans->contains('id', $request->plan_id)) {
-            return response()->json(['message' => 'Transaction failed: The specified plan does not belong to the selected product.'], 422);
+            return response()->json(['message' => 'Application failed: The specified plan does not belong to the selected product.'], 422);
         }
 
          // Check adjusted loan amount against product's min and max requested amounts
@@ -136,7 +136,7 @@ public function initiateTransaction(Request $request)
         $maxRequestedAmount = $product->max_requested_amount ?? 1000000;
         if ($adjustedLoanAmount < $minRequestedAmount || $adjustedLoanAmount > $maxRequestedAmount) {
             return response()->json([
-                'message' => 'Transaction failed: Requested Financing amount is out of the allowed range.',
+                'message' => 'Application failed: Requested Financing amount is out of the allowed range.',
                 'adjusted_financing_amount' => $adjustedLoanAmount,
                 'min_requested_amount' => $minRequestedAmount,
                 'max_requested_amount' => $maxRequestedAmount,
@@ -173,8 +173,8 @@ if (!empty($applicant->applicantThreshold) &&
         ];
 
         $chargesLogData[] = [
-            'transaction_id' => null,
-            'transaction_installment_id' => null,
+            'application_id' => null,
+            'application_installment_id' => null,
             'amount' => $chargeAmount,
             'type' => 'charges',
             'created_at' => now(),
@@ -201,8 +201,8 @@ if (!empty($applicant->applicantThreshold) &&
     ];
 
     $chargesLogData[] = [
-        'transaction_id' => null,
-        'transaction_installment_id' => null,
+        'application_id' => null,
+        'application_installment_id' => null,
         'amount' => $chargeAmount,
         'type' => 'charges',
         'created_at' => now(),
@@ -246,8 +246,8 @@ if (!empty($applicant->applicantThreshold) &&
             $totalFedCharges += $fedAmount;
 
             $fedLogData[] = [
-                'transaction_id' => null,
-                'transaction_installment_id' => null,
+                'application_id' => null,
+                'application_installment_id' => null,
                 'amount' => $fedAmount,
                 'type' => 'fed',
                 'created_at' => now(),
@@ -267,8 +267,8 @@ if (!empty($applicant->applicantThreshold) &&
         ];
 
         $chargesLogData[] = [
-            'transaction_id' => null,
-            'transaction_installment_id' => null,
+            'application_id' => null,
+            'application_installment_id' => null,
             'amount' => $chargeAmount,
             'type' => 'charges',
             'created_at' => now(),
@@ -284,7 +284,7 @@ if (!empty($applicant->applicantThreshold) &&
         $disbursedAmount = $adjustedLoanAmount - $totalCharges;
         $outstandingAmount = $adjustedLoanAmount;
 
-        $transaction = Transaction::create([
+        $application = Application::create([
             'applicant_id' => $applicant->id,
             'product_id' => $product->id,
             'plan_id' => $plan->id,
@@ -298,21 +298,21 @@ if (!empty($applicant->applicantThreshold) &&
         ]);
 
         foreach ($chargesLogData as &$log) {
-            $log['transaction_id'] = $transaction->id;
+            $log['application_id'] = $application->id;
         }
         foreach ($fedLogData as &$fedLog) {
-            $fedLog['transaction_id'] = $transaction->id;
+            $fedLog['application_id'] = $application->id;
         }
-        TransactionLog::insert(array_merge($chargesLogData, $fedLogData));
+        ApplicationLog::insert(array_merge($chargesLogData, $fedLogData));
 
         foreach ($chargesData as &$charge) {
-            $charge['transaction_id'] = $transaction->id;
+            $charge['application_id'] = $application->id;
         }
-        DB::table('transaction_charges')->insert($chargesData);
+        DB::table('application_charges')->insert($chargesData);
 
-        TransactionLog::create([
-            'transaction_id' => $transaction->id,
-            'transaction_installment_id' => null,
+        ApplicationLog::create([
+            'application_id' => $application->id,
+            'application_installment_id' => null,
             'amount' => $disbursedAmount,
             'type' => 'disbursement',
         ]);
@@ -324,8 +324,8 @@ if (!empty($applicant->applicantThreshold) &&
             for ($i = 1; $i <= $plan->duration_value; $i++) {
                 $finalAmount = ($i === $plan->duration_value) ? $baseInstallmentAmount + $remainder : $baseInstallmentAmount;
 
-                DB::table('transaction_installments')->insert([
-                    'transaction_id' => $transaction->id,
+                DB::table('application_installments')->insert([
+                    'application_id' => $application->id,
                     'amount' => $finalAmount,
                     'outstanding' => $finalAmount,
                     'due_date' => now()->addMonths($i),
@@ -334,8 +334,8 @@ if (!empty($applicant->applicantThreshold) &&
                 ]);
             }
         } elseif ($plan->duration_unit === 'days') {
-            DB::table('transaction_installments')->insert([
-                'transaction_id' => $transaction->id,
+            DB::table('application_installments')->insert([
+                'application_id' => $application->id,
                 'amount' => $outstandingAmount,
                 'outstanding' => $outstandingAmount,
                 'due_date' => now()->addDays($plan->duration_value),
@@ -351,22 +351,22 @@ if (!empty($applicant->applicantThreshold) &&
         DB::commit();
 
        return response()->json([
-            'message' => 'Transaction initiated successfully.',
-            'transaction_id' => $transaction->id,
-            'transaction_details' => new TransactionResource($transaction)
+            'message' => 'Application initiated successfully.',
+            'application_id' => $application->id,
+            'application_details' => new ApplicationResource($application)
                     ], 201)->header('Content-Type', 'application/json');
 
     } catch (\Exception $e) {
         DB::rollback();
-        return response()->json(['message' => 'Failed to initiate transaction: ' . $e->getMessage()], 500);
+        return response()->json(['message' => 'Failed to initiate application: ' . $e->getMessage()], 500);
     }
 }
 
-public function calculateTransaction(Request $request)
+public function calculateApplication(Request $request)
 {
     $request->validate([
         'loan_amount' => 'required|numeric|min:1',
-        'order_number' => 'required|unique:transactions,order_number',
+        'order_number' => 'required|unique:applications,order_number',
         'plan_id' => 'required|exists:product_plans,id',
         'product_id' => 'required|exists:products,id',
         'applicant_id' => 'required|exists:applicants,id',
@@ -376,33 +376,33 @@ public function calculateTransaction(Request $request)
         $applicant = Applicant::with(['creditLimit', 'financingPolicy', 'products', 'applicantThreshold'])->findOrFail($request->applicant_id);
 
         if (!$applicant->is_active) {
-            return response()->json(['message' => 'Transaction failed: Applicant is disabled.'], 403);
+            return response()->json(['message' => 'Application failed: Applicant is disabled.'], 403);
         }
 
         if (!$applicant->products->contains('id', $request->product_id)) {
-            return response()->json(['message' => 'Transaction failed: Applicant cannot avail this product at this time.'], 403);
+            return response()->json(['message' => 'Application failed: Applicant cannot avail this product at this time.'], 403);
         }
 
         $financingPercentage = $applicant->financingPolicy->financing_percentage ?? 100;
         $adjustedLoanAmount = $request->loan_amount * ($financingPercentage / 100);
         if ($adjustedLoanAmount > ($applicant->creditLimit->available_limit ?? 0)) {
-            return response()->json(['message' => 'Transaction failed: Adjusted loan amount exceeds available credit limit.'], 422);
+            return response()->json(['message' => 'Application failed: Adjusted loan amount exceeds available credit limit.'], 422);
         }
 
         $product = Product::with('productPlans')->findOrFail($request->product_id);
         if (!$product->is_active) {
-            return response()->json(['message' => 'Transaction failed: Product is disabled.'], 403);
+            return response()->json(['message' => 'Application failed: Product is disabled.'], 403);
         }
 
         if (!$product->productPlans->contains('id', $request->plan_id)) {
-            return response()->json(['message' => 'Transaction failed: The specified plan does not belong to the selected product.'], 422);
+            return response()->json(['message' => 'Application failed: The specified plan does not belong to the selected product.'], 422);
         }
 
         $minRequestedAmount = $product->min_requested_amount ?? 0;
         $maxRequestedAmount = $product->max_requested_amount ?? 1000000;
         if ($adjustedLoanAmount < $minRequestedAmount || $adjustedLoanAmount > $maxRequestedAmount) {
             return response()->json([
-                'message' => 'Transaction failed: Requested Financing amount is out of the allowed range.',
+                'message' => 'Application failed: Requested Financing amount is out of the allowed range.',
                 'adjusted_financing_amount' => $adjustedLoanAmount,
                 'min_requested_amount' => $minRequestedAmount,
                 'max_requested_amount' => $maxRequestedAmount,
@@ -503,11 +503,11 @@ public function calculateTransaction(Request $request)
                 'due_date' => now()->addDays($plan->duration_value)->toDateString(),
             ];
         } else {
-            return response()->json(['message' => 'Transaction failed: Invalid duration unit.'], 422);
+            return response()->json(['message' => 'Application failed: Invalid duration unit.'], 422);
         }
 
         return response()->json([
-            'message' => 'Transaction calculated successfully.',
+            'message' => 'Application calculated successfully.',
             'order_amount' => $request->loan_amount,
             'approved_amount' => $adjustedLoanAmount,
             'disbursed_amount' => $disbursedAmount,
@@ -516,7 +516,7 @@ public function calculateTransaction(Request $request)
             'installments' => $installments,
         ], 200);
     } catch (\Exception $e) {
-        return response()->json(['message' => 'Failed to calculate transaction: ' . $e->getMessage()], 500);
+        return response()->json(['message' => 'Failed to calculate application: ' . $e->getMessage()], 500);
     }
 }
 

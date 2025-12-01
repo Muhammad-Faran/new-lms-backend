@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('transaction_charges', function (Blueprint $table) {
+        Schema::create('application_charges', function (Blueprint $table) {
         $table->id();
-        $table->unsignedBigInteger('transaction_id');
+        $table->unsignedBigInteger('application_id');
         $table->unsignedBigInteger('product_tier_id');
         $table->unsignedBigInteger('product_charge_id');
         $table->decimal('charge_amount', 10, 2);
@@ -22,7 +22,7 @@ return new class extends Migration
         $table->string('charge_condition')->nullable();
         $table->timestamps();
 
-        $table->foreign('transaction_id')->references('id')->on('transactions')->onDelete('cascade');
+        $table->foreign('application_id')->references('id')->on('applications')->onDelete('cascade');
         $table->foreign('product_tier_id')->references('id')->on('product_tiers')->onDelete('cascade');
         $table->foreign('product_charge_id')->references('id')->on('product_charges')->onDelete('cascade');
     });
@@ -34,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('transaction_charges');
+        Schema::dropIfExists('application_charges');
     }
 };

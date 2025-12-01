@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('applicants', function (Blueprint $table) {
-            $table->unsignedBigInteger('shipper_id')->nullable()->after('wallet_id');
+        Schema::table('applications', function (Blueprint $table) {
+            $table->decimal('order_amount', 10, 2)->nullable()->after('disbursed_amount');
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('applicants', function (Blueprint $table) {
-            $table->dropColumn('shipper_id');
+        Schema::table('applications', function (Blueprint $table) {
+            $table->dropColumn('order_amount');
         });
     }
 };

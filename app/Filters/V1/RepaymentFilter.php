@@ -22,7 +22,7 @@ class RepaymentFilter extends ApiFilter
     ];
 
     protected $relationSearchTableFields = [
-        'transaction.order_number',
+        'application.order_number',
     ];
 
     protected $searchFields = [
@@ -39,12 +39,12 @@ class RepaymentFilter extends ApiFilter
     ];
 
     protected $relationSearchDropdownFields = [
-        'transaction.product_id', 
+        'application.product_id', 
     ];
 
     protected $columnHeaders = [
         ['name' => 'ID', 'selector' => 'repayments.id'],
-        ['name' => 'Transaction ID', 'selector' => 'repayments.transaction_id'],
+        ['name' => 'Application ID', 'selector' => 'repayments.application_id'],
         ['name' => 'Installment ID', 'selector' => 'repayments.installment_id'],
         ['name' => 'Applicant ID', 'selector' => 'repayments.applicant_id'],
         ['name' => 'Amount', 'selector' => 'repayments.amount'],

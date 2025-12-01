@@ -4,7 +4,7 @@ namespace App\Http\Resources\V1;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class TransactionResource extends JsonResource
+class ApplicationResource extends JsonResource
 {
     public function toArray($request)
     {
@@ -36,7 +36,7 @@ class TransactionResource extends JsonResource
                     'id' => $charge->id,
                     'name' => $charge->productCharge && $charge->productCharge->charge ? $charge->productCharge->charge->name : null ,
                     'status' => $charge->status,
-                    'transaction_id' => $charge->transaction_id,
+                    'application_id' => $charge->application_id,
                     'product_tier_id' => $charge->product_tier_id,
                     'product_charge_id' => $charge->product_charge_id,
                     'charge_amount' => $charge->charge_amount,
@@ -50,7 +50,7 @@ class TransactionResource extends JsonResource
             'installments' => $this->installments->map(function ($installment) {
                 return [
                     'id' => $installment->id,
-                    'transaction_id' => $installment->transaction_id,
+                    'application_id' => $installment->application_id,
                     'amount' => $installment->amount,
                     'outstanding' => $installment->outstanding,
                     'due_date' => $installment->due_date,

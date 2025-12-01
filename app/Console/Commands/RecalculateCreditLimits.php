@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\Applicant;
-use App\Models\Transaction;
+use App\Models\Application;
 use App\Models\CreditLimit;
 use DB;
 
@@ -22,7 +22,7 @@ class RecalculateCreditLimits extends Command
      *
      * @var string
      */
-    protected $description = 'Recalculate and update available credit limits for all applicants based on disbursed transactions';
+    protected $description = 'Recalculate and update available credit limits for all applicants based on disbursed applications';
 
     /**
      * Execute the console command.
@@ -48,9 +48,9 @@ class RecalculateCreditLimits extends Command
                     continue; // Skip if no credit limit exists
                 }
 
-                // Sum of only disbursed transactions (excluding repaid/completed)
-                $totalDisbursed = Transaction::where('applicant_id', $applicant->id)
-                    ->where('status', 'disbursed') // Only disbursed transactions
+                // Sum of only disbursed applications (excluding repaid/completed)
+                $totalDisbursed = Application::where('applicant_id', $applicant->id)
+                    ->where('status', 'disbursed') // Only disbursed applications
                     ->sum('loan_amount');
 
                 // Calculate new available limit

@@ -13,8 +13,8 @@ return new class extends Migration
 {
     Schema::create('repayments', function (Blueprint $table) {
         $table->id();
-        $table->foreignId('transaction_id')->constrained('transactions')->onDelete('cascade');
-        $table->foreignId('installment_id')->constrained('transaction_installments')->onDelete('cascade');
+        $table->foreignId('application_id')->constrained('applications')->onDelete('cascade');
+        $table->foreignId('installment_id')->constrained('application_installments')->onDelete('cascade');
         $table->foreignId('applicant_id')->constrained('applicants')->onDelete('cascade');
         $table->decimal('amount', 15, 2);
         $table->timestamp('paid_at')->nullable();

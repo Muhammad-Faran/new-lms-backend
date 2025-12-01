@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Repayment;
-use App\Models\Transaction;
-use App\Models\TransactionInstallment;
+use App\Models\Application;
+use App\Models\ApplicationInstallment;
 use App\Models\Applicant;
-use App\Models\TransactionLog;
+use App\Models\ApplicationLog;
 use App\Filters\V1\RepaymentFilter;
 use App\Http\Resources\V1\RepaymentCollection;
 use App\Http\Resources\V1\RepaymentResource;
@@ -28,7 +28,7 @@ class RepaymentController extends Controller
     {
         $filter = new RepaymentFilter();
 
-        $query = Repayment::with(['transaction', 'applicant','installment']);
+        $query = Repayment::with(['application', 'applicant','installment']);
 
         $repayments = $filter->filter($query, $request);
 
@@ -49,26 +49,26 @@ class RepaymentController extends Controller
    public function payInstallment(Request $request)
 {
     $request->validate([
-        'installment_id' => 'required|exists:transaction_installments,id',
-        'transaction_id' => 'required|exists:transactions,id',
+        'installment_id' => 'required|exists:application_installments,id',
+        'application_id' => 'required|exists:applications,id',
         'wallet_id' => 'required|exists:applicants,wallet_id',
         'amount' => 'required|numeric|min:1',
     ]);
 
     $applicant = Applicant::where('wallet_id', $request->wallet_id)->firstOrFail();
-    $transaction = Transaction::findOrFail($request->transaction_id);
+    $application = Application::findOrFail($request->application_id);
 
-    if ($transaction->applicant_id !== $applicant->id) {
+    if ($application->applicant_id !== $applicant->id) {
         return response()->json([
-            'message' => 'Unauthorized: The provided wallet ID does not own this transaction.',
+            'message' => 'Unauthorized: The provided wallet ID does not own this application.',
         ], 403);
     }
 
-    $installment = $transaction->installments()->where('id', $request->installment_id)->first();
+    $installment = $application->installments()->where('id', $request->installment_id)->first();
 
     if (!$installment) {
         return response()->json([
-            'message' => 'The specified installment does not belong to the provided transaction.',
+            'message' => 'The specified installment does not belong to the provided application.',
         ], 422);
     }
 
@@ -86,7 +86,7 @@ class RepaymentController extends Controller
     }
 
     $repayment = Repayment::create([
-        'transaction_id' => $transaction->id,
+        'application_id' => $application->id,
         'installment_id' => $installment->id,
         'applicant_id' => $applicant->id,
         'amount' => $request->amount,
@@ -108,17 +108,17 @@ class RepaymentController extends Controller
         ]);
     }
 
-    $transaction->update([
-        'outstanding_amount' => $transaction->outstanding_amount - $outstandingAmount,
+    $application->update([
+        'outstanding_amount' => $application->outstanding_amount - $outstandingAmount,
     ]);
 
-    if ($transaction->outstanding_amount <= 0) {
-        $transaction->update(['status' => 'completed']);
+    if ($application->outstanding_amount <= 0) {
+        $application->update(['status' => 'completed']);
     }
 
-    TransactionLog::create([
-        'transaction_id' => $transaction->id,
-        'transaction_installment_id' => $installment->id,
+    ApplicationLog::create([
+        'application_id' => $application->id,
+        'application_installment_id' => $installment->id,
         'amount' => $request->amount,
         'type' => 'collection',
     ]);
@@ -133,7 +133,7 @@ class RepaymentController extends Controller
 {
     $filter = new RepaymentFilter();
 
-    $query = Repayment::with(['transaction', 'applicant','installment']);
+    $query = Repayment::with(['application', 'applicant','installment']);
 
     // Apply filters
     $repayments = $filter->filter($query, $request);
@@ -147,15 +147,15 @@ class RepaymentController extends Controller
         return [
             'Id' => $repayment->id,
             'Amount Paid' => $repayment->amount,
-            'Transaction Id' => optional($repayment->transaction)->id,
+            'Application Id' => optional($repayment->application)->id,
             'applicant' => optional($repayment->applicant)->first_name . ' ' . optional($repayment->applicant)->last_name,
             'Shipper' => optional($repayment->applicant)->shipper_name,
-            'Product' => optional($repayment->transaction->product)->name,
-            'Order Number' => $repayment->transaction->order_number,
-            'Order Amount' => $repayment->transaction->order_amount,
-            'Financing Amount' => $repayment->transaction->loan_amount,
-            'Total Charges' => $repayment->transaction->total_charges,
-            'Disbursed Amount' => $repayment->transaction->disbursed_amount,
+            'Product' => optional($repayment->application->product)->name,
+            'Order Number' => $repayment->application->order_number,
+            'Order Amount' => $repayment->application->order_amount,
+            'Financing Amount' => $repayment->application->loan_amount,
+            'Total Charges' => $repayment->application->total_charges,
+            'Disbursed Amount' => $repayment->application->disbursed_amount,
             'Disbursement Date' => optional($repayment->created_at)->format('Y-m-d'),
             'Paid Date' => $repayment->paid_at,
             'Status' => $repayment->status,
@@ -163,7 +163,7 @@ class RepaymentController extends Controller
     })->toArray();
 
     $headers = [
-        'Id','Amount Paid', 'Transaction Id', 'applicant', 'Shipper', 'Product', 'Order Number',
+        'Id','Amount Paid', 'Application Id', 'applicant', 'Shipper', 'Product', 'Order Number',
         'Order Amount', 'Financing Amount', 'Total Charges', 'Disbursed Amount',
         'Paid Date', 'Disbursement Date', 'Status',
     ];

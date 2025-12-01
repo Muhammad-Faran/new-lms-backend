@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Transaction extends Model
+class Application extends Model
 {
     protected $fillable = [
         'applicant_id', 'product_id', 'plan_id','order_number', 'loan_amount','order_amount', 
@@ -28,12 +28,12 @@ class Transaction extends Model
 
     public function charges()
     {
-        return $this->hasMany(TransactionCharge::class);
+        return $this->hasMany(ApplicationCharge::class);
     }
 
     public function installments()
     {
-        return $this->hasMany(TransactionInstallment::class);
+        return $this->hasMany(ApplicationInstallment::class);
     }
 
     public function getNextDueDateAttribute()

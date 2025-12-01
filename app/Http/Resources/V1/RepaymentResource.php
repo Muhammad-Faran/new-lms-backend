@@ -10,7 +10,7 @@ class RepaymentResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'transaction_id' => $this->transaction_id,
+            'application_id' => $this->application_id,
             'installment_id' => $this->installment_id,
             'applicant_id' => $this->applicant_id,
             'amount' => $this->amount,
@@ -18,10 +18,10 @@ class RepaymentResource extends JsonResource
             'paid_at' => $this->paid_at,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'transaction' => $this->transaction ? [
-                'id' => $this->transaction->id,
-                'loan_amount' => $this->transaction->loan_amount,
-                'outstanding_amount' => $this->transaction->outstanding_amount,
+            'application' => $this->application ? [
+                'id' => $this->application->id,
+                'loan_amount' => $this->application->loan_amount,
+                'outstanding_amount' => $this->application->outstanding_amount,
             ] : null,
             'applicant' => $this->applicant ? [
                 'id' => $this->applicant->id,

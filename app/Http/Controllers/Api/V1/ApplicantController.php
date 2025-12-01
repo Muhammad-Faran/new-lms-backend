@@ -8,7 +8,7 @@ use App\Http\Requests\ApplicantRequest;
 use App\Http\Resources\V1\ApplicantResource;
 use App\Http\Resources\V1\ApplicantCollection;
 use App\Models\CreditLimit;
-use App\Models\Transaction;
+use App\Models\Application;
 use App\Models\ApplicantThreshold;
 use App\Models\ApplicantFinancingPolicy;
 use App\Models\ApplicantProductRule;
@@ -318,7 +318,7 @@ public function assignFinancingPolicy(Request $request, Applicant $applicant)
 
         $applicant = Applicant::where('wallet_id', $request->wallet_id)->firstOrFail();
 
-        $transactions = Transaction::with(['installments'])
+        $applications = Application::with(['installments'])
             ->where('applicant_id', $applicant->id)
             ->where('status', 'disbursed')
             ->orderByDesc('created_at')
@@ -326,7 +326,7 @@ public function assignFinancingPolicy(Request $request, Applicant $applicant)
 
         return response()->json([
             'message' => 'Loan details retrieved successfully.',
-            'transactions' => $transactions,
+            'applications' => $applications,
         ]);
     }
 
@@ -338,14 +338,14 @@ public function assignFinancingPolicy(Request $request, Applicant $applicant)
 
         $applicant = Applicant::where('wallet_id', $request->wallet_id)->firstOrFail();
 
-        $transactions = Transaction::where('applicant_id', $applicant->id)
+        $applications = Application::where('applicant_id', $applicant->id)
             ->where('created_at', '>=', now()->subDays(30))
             ->orderByDesc('created_at')
             ->get();
 
         return response()->json([
             'message' => 'Loan details retrieved successfully.',
-            'transactions' => $transactions,
+            'applications' => $applications,
         ]);
     }
 

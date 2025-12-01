@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('transaction_installments', function (Blueprint $table) {
+        Schema::create('application_installments', function (Blueprint $table) {
         $table->id();
-        $table->unsignedBigInteger('transaction_id');
+        $table->unsignedBigInteger('application_id');
         $table->decimal('amount', 10, 2);
         $table->decimal('outstanding', 10, 2);
         $table->date('due_date');
@@ -21,7 +21,7 @@ return new class extends Migration
                   ->default('unpaid'); // Default status of the product
         $table->timestamps();
 
-        $table->foreign('transaction_id')->references('id')->on('transactions')->onDelete('cascade');
+        $table->foreign('application_id')->references('id')->on('applications')->onDelete('cascade');
     });
 
     }
@@ -31,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('transaction_installments');
+        Schema::dropIfExists('application_installments');
     }
 };

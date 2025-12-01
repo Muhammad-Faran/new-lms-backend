@@ -58,9 +58,9 @@ class Applicant extends Model
         return $this->status === 1; // Returns true if active, false if inactive
     }
 
-    public function transactions()
+    public function applications()
     {
-        return $this->hasMany(Transaction::class);
+        return $this->hasMany(Application::class);
     }
 
     public function repayments()

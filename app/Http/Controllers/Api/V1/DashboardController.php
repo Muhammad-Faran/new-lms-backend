@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Transaction;
+use App\Models\Application;
 use App\Models\Applicant;
 
 class DashboardController extends Controller
@@ -19,10 +19,10 @@ class DashboardController extends Controller
         $toDate = $request->input('to_date');
         $shipperName = $request->input('shipper_name');
         $productId = $request->input('product_id');
-        // Base Transaction Query
-        $baseQuery = Transaction::query();
+        // Base Application Query
+        $baseQuery = Application::query();
 
-        // Ensure transactions belong to applicants who are NOT in the exclusion list
+        // Ensure applications belong to applicants who are NOT in the exclusion list
         $baseQuery->whereHas('applicant', function ($query) use ($excludedApplicantIds, $shipperName) {
             $query->whereNotIn('id', $excludedApplicantIds);
 
@@ -42,19 +42,19 @@ class DashboardController extends Controller
             $baseQuery->where('product_id', $productId);
         }
         // Clone query before applying different aggregates
-        $transactionQuery = clone $baseQuery;
+        $applicationQuery = clone $baseQuery;
 
         // Total disbursed amount
-        $totalDisbursedAmount = $transactionQuery->sum('disbursed_amount');
+        $totalDisbursedAmount = $applicationQuery->sum('disbursed_amount');
 
-        // Total outstanding amount (AUM) for disbursed transactions
-        $totalAUM = (clone $transactionQuery)->where('status', 'disbursed')->sum('outstanding_amount');
+        // Total outstanding amount (AUM) for disbursed applications
+        $totalAUM = (clone $applicationQuery)->where('status', 'disbursed')->sum('outstanding_amount');
 
-        // Total number of transactions (order count)
-        $orderCount = (clone $transactionQuery)->count();
+        // Total number of applications (order count)
+        $orderCount = (clone $applicationQuery)->count();
 
-        // Total revenue (sum of total_charges in transactions table)
-        $totalRevenue = (clone $transactionQuery)->sum('total_charges');
+        // Total revenue (sum of total_charges in applications table)
+        $totalRevenue = (clone $applicationQuery)->sum('total_charges');
 
         // Total number of shippers
         $totalShippers = Applicant::whereNotIn('id', $excludedApplicantIds)
@@ -69,7 +69,7 @@ class DashboardController extends Controller
             ->when($shipperName, function ($query) use ($shipperName) {
                 return $query->where('shipper_name', 'LIKE', "%$shipperName%");
             })
-            ->whereHas('transactions', function ($query) use ($threeMonthsAgo, $fromDate, $toDate, $productId) {
+            ->whereHas('applications', function ($query) use ($threeMonthsAgo, $fromDate, $toDate, $productId) {
                 $query->where('created_at', '>=', $threeMonthsAgo);
 
                 if ($fromDate) {
@@ -84,13 +84,13 @@ class DashboardController extends Controller
             })
             ->count();
 
-        // Count of delinquent orders (transactions with overdue & unpaid installments)
-        $delinquentOrdersCount = (clone $transactionQuery)->whereHas('installments', function ($query) {
+        // Count of delinquent orders (applications with overdue & unpaid installments)
+        $delinquentOrdersCount = (clone $applicationQuery)->whereHas('installments', function ($query) {
             $query->where('due_date', '<', now())->where('status', 'unpaid');
         })->count();
 
-        // Volume of delinquent loans (sum of disbursed_amount for delinquent transactions)
-        $volumeOfDelinquentLoans = (clone $transactionQuery)->whereHas('installments', function ($query) {
+        // Volume of delinquent loans (sum of disbursed_amount for delinquent applications)
+        $volumeOfDelinquentLoans = (clone $applicationQuery)->whereHas('installments', function ($query) {
             $query->where('due_date', '<', now())->where('status', 'unpaid');
         })->sum('disbursed_amount');
 

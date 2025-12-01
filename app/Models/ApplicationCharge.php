@@ -4,16 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class TransactionCharge extends Model
+class ApplicationCharge extends Model
 {
     protected $fillable = [
-        'transaction_id', 'product_tier_id', 'product_charge_id', 
+        'application_id', 'product_tier_id', 'product_charge_id', 
         'charge_amount', 'apply_fed', 'fed_amount', 'charge_condition'
     ];
 
-    public function transaction()
+    public function application()
     {
-        return $this->belongsTo(Transaction::class);
+        return $this->belongsTo(Application::class);
     }
 
     public function productTier()

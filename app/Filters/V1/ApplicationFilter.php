@@ -4,7 +4,7 @@ namespace App\Filters\V1;
 
 use App\Filters\ApiFilter;
 
-class OverdueLoanFilter extends ApiFilter
+class ApplicationFilter extends ApiFilter
 {
     protected $relation_table = 'applicants';
     protected $current_table = 'applications';
