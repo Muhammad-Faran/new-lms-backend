@@ -15,8 +15,6 @@ class ApplicantCollection extends ResourceCollection
             'last_name' => $applicant->last_name,
             'cnic' => $applicant->cnic,
             'wallet_id' => $applicant->wallet_id,
-            'shipper_id' => $applicant->shipper_id,
-            'shipper_name' => $applicant->shipper_name,
             'cnic_front_image' => $applicant->cnic_front_image,
             'cnic_back_image' => $applicant->cnic_back_image,
             'cnic_issuance_date' => $applicant->cnic_issuance_date,
@@ -56,13 +54,6 @@ class ApplicantCollection extends ResourceCollection
                 'id' => $applicant->financingPolicy->id,
                 'financing_percentage' => $applicant->financingPolicy->financing_percentage,
             ] : null,
-             'credit_engine_data' => [
-                'ofac_nacta' => $applicant->ofacNacta ? $applicant->ofacNacta->data : null,
-                'shipper_info' => $applicant->creditEngineShipperInfo ? $applicant->creditEngineShipperInfo->data : null,
-                'shipper_kyc' => $applicant->creditEngineShipperKyc ? $applicant->creditEngineShipperKyc->data : null,
-                'shipper_pricing' => $applicant->creditEngineShipperPricing ? $applicant->creditEngineShipperPricing->data : null,
-                'shipper_credit_score' => $applicant->creditEngineShipperCreditScore ? $applicant->creditEngineShipperCreditScore->data : null,
-            ],
              'applicant_threshold' => $applicant->applicantThreshold ? [
                 'order_threshold' => $applicant->applicantThreshold->order_threshold,
                 'fixed_threshold_charges' => $applicant->applicantThreshold->fixed_threshold_charges,

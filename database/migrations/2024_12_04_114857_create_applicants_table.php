@@ -12,7 +12,6 @@ class CreateApplicantsTable extends Migration
             $table->id();
             $table->string('first_name', 100);
             $table->string('last_name', 100);
-            $table->string('wallet_id', 15)->unique();
             $table->string('mobile_no', 15)->unique();
             $table->string('email', 100)->unique()->nullable();
             $table->string('cnic', 15)->unique();

@@ -16,10 +16,6 @@ use App\Models\OFACNACTA;
 use App\Models\Applicant;
 use App\Filters\V1\ApplicantFilter;
 use Illuminate\Http\Request;
-use App\Models\CreditEngineShipperInfo;
-use App\Models\CreditEngineShipperKyc;
-use App\Models\CreditEngineShipperPricing;
-use App\Models\CreditEngineShipperCreditScore;
 use Illuminate\Support\Facades\Http;
 use DB;
 
@@ -107,10 +103,6 @@ class ApplicantController extends Controller
         'products.productTiers',
         'creditLimit',
         'financingPolicy',
-        'creditEngineShipperInfo',
-        'creditEngineShipperKyc',
-        'creditEngineShipperPricing',
-        'creditEngineShipperCreditScore',
         'productRules',
     ])->where('wallet_id', $walletId)->first();
 
@@ -385,129 +377,5 @@ public function assignFinancingPolicy(Request $request, Applicant $applicant)
 }
 
     
-    public function refreshCreditEngineShipperCreditScore(Request $request)
-{
-    $request->validate([
-        'applicant_id' => 'required|exists:applicants,id',
-    ]);
-
-    try {
-
-        $applicant = Applicant::findOrFail($request->applicant_id);
-
-
-        $baseUrl = config('credit_engine.base_url');
-        $endpoints = config('credit_engine.endpoints');
-        $headers = config('credit_engine.headers');
-        $shipperId = $applicant->shipper_id;
-
-        $shipperCreditScoreResponse = Http::withHeaders($headers)->get($baseUrl . $shipperId . $endpoints['credit_score']);
-
-        $shipperCreditScore = CreditEngineShipperCreditScore::updateOrCreate(
-            ['applicant_id' => $applicant->id],
-            ['shipper_id' => $applicant->shipper_id, 'data' => $shipperCreditScoreResponse->json()]
-        );
-
-        return response()->json(['message' => 'Credit Score refreshed successfully', 'data' => $shipperCreditScore], 200);
-    } catch (\Exception $e) {
-        return response()->json(['error' => 'Failed to refresh Credit Score: ' . $e->getMessage()], 500);
-    }
-}
-
-    public function refreshCreditEngineShipperInfo(Request $request)
-{
-    $request->validate([
-        'applicant_id' => 'required|exists:applicants,id',
-    ]);
-
-    try {
-
-        $applicant = Applicant::findOrFail($request->applicant_id);
-
-
-        $baseUrl = config('credit_engine.base_url');
-        $endpoints = config('credit_engine.endpoints');
-        $headers = config('credit_engine.headers');
-        $shipperId = $applicant->shipper_id;
-
-        $shipperInfoResponse = Http::withHeaders($headers)->get($baseUrl . $shipperId . $endpoints['info']);
-
-        $shipperInfo = CreditEngineShipperInfo::updateOrCreate(
-            ['applicant_id' => $applicant->id],
-            ['shipper_id' => $applicant->shipper_id, 'data' => $shipperInfoResponse->json()]
-        );
-
-        return response()->json(['message' => 'Shipper info refreshed successfully', 'data' => $shipperInfo], 200);
-    } catch (\Exception $e) {
-        return response()->json(['error' => 'Failed to refresh Shipper info: ' . $e->getMessage()], 500);
-    }
-}
-    
-    public function refreshCreditEngineShipperKyc(Request $request)
-{
-    $request->validate([
-        'applicant_id' => 'required|exists:applicants,id',
-    ]);
-
-    try {
-
-        $applicant = Applicant::findOrFail($request->applicant_id);
-
-        $baseUrl = config('credit_engine.base_url');
-        $endpoints = config('credit_engine.endpoints');
-        $headers = config('credit_engine.headers');
-        $shipperId = $applicant->shipper_id;
-
-        $shipperKycResponse = Http::withHeaders($headers)->get($baseUrl . $shipperId . $endpoints['kyc']);
-
-        $shipperKyc = CreditEngineShipperKyc::updateOrCreate(
-            ['applicant_id' => $applicant->id],
-            ['shipper_id' => $applicant->shipper_id, 'data' => $shipperKycResponse->json()]
-        );
-
-        return response()->json(['message' => 'Shipper kyc refreshed successfully', 'data' => $shipperKyc], 200);
-    } catch (\Exception $e) {
-        return response()->json(['error' => 'Failed to refresh Shipper kyc: ' . $e->getMessage()], 500);
-    }
-}
-
-    public function refreshCreditEngineShipperPricing(Request $request)
-{
-    $request->validate([
-        'applicant_id' => 'required|exists:applicants,id',
-    ]);
-
-    try {
-
-        $applicant = Applicant::findOrFail($request->applicant_id);
-
-        $baseUrl = config('credit_engine.base_url');
-        $endpoints = config('credit_engine.endpoints');
-        $headers = config('credit_engine.headers');
-        $shipperId = $applicant->shipper_id;
-
-        $shipperPricingResponse = Http::withHeaders($headers)->get($baseUrl . $shipperId . $endpoints['pricing']);
-
-        $shipperPricing = CreditEngineShipperPricing::updateOrCreate(
-            ['applicant_id' => $applicant->id],
-            ['shipper_id' => $applicant->shipper_id, 'data' => $shipperPricingResponse->json()]
-        );
-
-        return response()->json(['message' => 'Shipper pricing refreshed successfully', 'data' => $shipperPricing], 200);
-    } catch (\Exception $e) {
-        return response()->json(['error' => 'Failed to refresh Shipper pricing: ' . $e->getMessage()], 500);
-    }
-}
-
-public function getUniqueShipperNames()
-{
-    $uniqueShipperNames = Applicant::whereNotNull('shipper_name')
-        ->distinct()
-        ->pluck('shipper_name');
-
-    return response()->json([
-        'shipper_names' => $uniqueShipperNames,
-    ], 200);
-}
-
+   
 }
