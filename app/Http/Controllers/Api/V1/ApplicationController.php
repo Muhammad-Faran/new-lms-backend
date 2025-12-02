@@ -441,7 +441,7 @@ public function calculateApplication(Request $request)
         }
 
         // If neither Applicant nor tier threshold applies, OR Applicant threshold exists but is exceeded → Use percentage-based calculation
-        if ((empty($applicant->applicantThreshold) && (!empty($tier->order_threshold) && $request->loan_amount > $tier->order_threshold)) || (!empty($applicant->applicantThreshold) && $request->loan_amount > $applicant->applicantThreshold->order_threshold))
+        else
         {
 
             $applicantRule = ApplicantProductRule::where('applicant_id', $applicant->id)
