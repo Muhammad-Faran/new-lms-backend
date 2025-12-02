@@ -26,12 +26,10 @@ class OverdueLoanFilter extends ApiFilter
 
     protected $searchFields = [
         'applications.id',
-        'applications.order_number',
     ];
 
     protected $searchTableFields = [
         'applications.id',
-        'applications.order_number',
     ];
 
     protected $searchDropdownFields = [
@@ -51,8 +49,6 @@ class OverdueLoanFilter extends ApiFilter
         ['name' => 'Plan ID', 'selector' => 'applications.plan_id'],
         ['name' => 'Loan Amount', 'selector' => 'applications.loan_amount'],
         ['name' => 'Total Charges', 'selector' => 'applications.total_charges'],
-        ['name' => 'Order Amount', 'selector' => 'applications.order_amount'],
-        ['name' => 'Order Number', 'selector' => 'applications.order_number'],
         ['name' => 'Disbursed Amount', 'selector' => 'applications.disbursed_amount'],
         ['name' => 'Outstanding Amount', 'selector' => 'applications.outstanding_amount'],
         ['name' => 'Status', 'selector' => 'applications.status'],

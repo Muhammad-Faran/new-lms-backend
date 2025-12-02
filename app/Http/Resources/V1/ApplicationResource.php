@@ -17,8 +17,6 @@ class ApplicationResource extends JsonResource
             'total_charges' => $this->total_charges,
             'disbursed_amount' => $this->disbursed_amount,
             'status' => $this->status,
-            'order_amount' => $this->order_amount,
-            'order_number' => $this->order_number,
             'outstanding_amount' => $this->outstanding_amount,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

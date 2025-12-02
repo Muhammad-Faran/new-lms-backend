@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Application extends Model
 {
     protected $fillable = [
-        'applicant_id', 'product_id', 'plan_id','order_number', 'loan_amount','order_amount', 
+        'applicant_id', 'product_id', 'plan_id', 'loan_amount', 
         'total_charges', 'outstanding_amount','disbursed_amount', 'status'
     ];
 

@@ -22,7 +22,6 @@ class RepaymentFilter extends ApiFilter
     ];
 
     protected $relationSearchTableFields = [
-        'application.order_number',
     ];
 
     protected $searchFields = [

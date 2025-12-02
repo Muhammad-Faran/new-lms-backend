@@ -61,8 +61,6 @@ class ApplicationController extends Controller
             'Applicant' => optional($application->applicant)->first_name . ' ' . optional($application->applicant)->last_name,
             'Shipper' => optional($application->applicant)->shipper_name,
             'Product' => optional($application->product)->name,
-            'Order Number' => $application->order_number,
-            'Order Amount' => $application->order_amount,
             'Financing Amount' => $application->loan_amount,
             'Total Charges' => $application->total_charges,
             'Disbursed Amount' => $application->disbursed_amount,
@@ -73,8 +71,7 @@ class ApplicationController extends Controller
     })->toArray();
 
     $headers = [
-        'Id', 'Applicant', 'Shipper', 'Product', 'Order Number',
-        'Order Amount', 'Financing Amount', 'Total Charges', 'Disbursed Amount',
+        'Id', 'Applicant', 'Shipper', 'Product', 'Financing Amount', 'Total Charges', 'Disbursed Amount',
         'Due Date', 'Disbursement Date', 'Status',
     ];
 
@@ -87,7 +84,6 @@ public function initiateApplication(Request $request)
 {
     $request->validate([
         'loan_amount' => 'required|numeric|min:1',
-        'order_number' => 'required|unique:applications,order_number',
         'plan_id' => 'required|exists:product_plans,id',
         'product_id' => 'required|exists:products,id',
         'applicant_id' => 'required|exists:applicants,id',
@@ -289,8 +285,6 @@ if (!empty($applicant->applicantThreshold) &&
             'product_id' => $product->id,
             'plan_id' => $plan->id,
             'status' => "disbursed",
-            'order_number' => $request->order_number,
-            'order_amount' => $request->loan_amount,
             'loan_amount' => $adjustedLoanAmount,
             'disbursed_amount' => $disbursedAmount,
             'total_charges' => $totalCharges,
@@ -366,7 +360,6 @@ public function calculateApplication(Request $request)
 {
     $request->validate([
         'loan_amount' => 'required|numeric|min:1',
-        'order_number' => 'required|unique:applications,order_number',
         'plan_id' => 'required|exists:product_plans,id',
         'product_id' => 'required|exists:products,id',
         'applicant_id' => 'required|exists:applicants,id',

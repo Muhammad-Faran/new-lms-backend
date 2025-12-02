@@ -17,8 +17,6 @@ class ApplicationCollection extends ResourceCollection
                 'plan_id' => $application->plan_id,
                 'loan_amount' => $application->loan_amount,
                 'total_charges' => $application->total_charges,
-                'order_amount' => $application->order_amount,
-                'order_number' => $application->order_number,
                 'disbursed_amount' => $application->disbursed_amount,
                 'outstanding_amount' => $application->outstanding_amount,
                 'status' => $application->status,

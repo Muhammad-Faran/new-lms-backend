@@ -27,7 +27,6 @@ class RepaymentCollection extends ResourceCollection
                     'product_plan' => $repayment->application->plan ? $repayment->application->plan->name : null  ,
                     'product_plan_duration' => $repayment->application->plan ? $repayment->application->plan->duration_value : null  ,
                     'product_plan_duration_unit' => $repayment->application->plan ? $repayment->application->plan->duration_unit : null  ,
-                    'order_number' => $repayment->application->order_number,
                     'loan_amount' => $repayment->application->loan_amount,
                     'disbursed_amount' => $repayment->application->disbursed_amount,
                     'total_charges' => $repayment->application->total_charges,
