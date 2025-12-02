@@ -501,7 +501,7 @@ public function calculateApplication(Request $request)
 
         return response()->json([
             'message' => 'Application calculated successfully.',
-            'order_amount' => $request->loan_amount,
+            'loan_amount' => $request->loan_amount,
             'approved_amount' => $adjustedLoanAmount,
             'disbursed_amount' => $disbursedAmount,
             'charges' => $chargesData,
