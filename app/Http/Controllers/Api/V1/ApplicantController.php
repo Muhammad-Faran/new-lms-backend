@@ -92,17 +92,13 @@ class ApplicantController extends Controller
 
    public function applicantLoanDetails(Applicant $applicant)
 {
+    // Only load applications and their installments
     $applicant->load([
-        'applications.product',
-        'applications.plan',
-        'applications.charges',
         'applications.installments',
     ]);
 
-    return response()->json([
-        'applicant'    => $applicant,
-        'applications' => $applicant->applications,
-    ]);
+    // Return just the applicant (with nested applications + installments)
+    return response()->json($applicant);
 }
 
 
