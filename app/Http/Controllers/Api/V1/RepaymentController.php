@@ -51,16 +51,16 @@ class RepaymentController extends Controller
     $request->validate([
         'installment_id' => 'required|exists:application_installments,id',
         'application_id' => 'required|exists:applications,id',
-        'wallet_id' => 'required|exists:applicants,wallet_id',
+        'applicant_id' => 'required|exists:applicants,id',
         'amount' => 'required|numeric|min:1',
     ]);
 
-    $applicant = Applicant::where('wallet_id', $request->wallet_id)->firstOrFail();
+    $applicant = Applicant::where('id', $request->applicant_id)->firstOrFail();
     $application = Application::findOrFail($request->application_id);
 
     if ($application->applicant_id !== $applicant->id) {
         return response()->json([
-            'message' => 'Unauthorized: The provided wallet ID does not own this application.',
+            'message' => 'Unauthorized: The provided ID does not own this application.',
         ], 403);
     }
 
