@@ -90,28 +90,21 @@ class ApplicantController extends Controller
     }
 
 
-   public function applicantByWalletId(Request $request)
+   public function applicantLoanDetails(Applicant $applicant)
 {
-    // Validate wallet_id
-    $request->validate([
-        'wallet_id' => 'required|string|exists:applicants,wallet_id',
+    $applicant->load([
+        'applications.product',
+        'applications.plan',
+        'applications.charges',
+        'applications.installments',
     ]);
 
-    $walletId = $request->get('wallet_id');  // Retrieve wallet_id from query parameters
-
-    $applicant = Applicant::with([
-        'products.productTiers',
-        'creditLimit',
-        'financingPolicy',
-        'productRules',
-    ])->where('wallet_id', $walletId)->first();
-
-    if (!$applicant) {
-        return response()->json(['message' => 'Applicant not found for the given wallet ID'], 404);
-    }
-
-    return new ApplicantResource($applicant);  // Return applicant resource
+    return response()->json([
+        'applicant'    => $applicant,
+        'applications' => $applicant->applications,
+    ]);
 }
+
 
     public function update(Applicant $applicant, ApplicantRequest $request)
     {

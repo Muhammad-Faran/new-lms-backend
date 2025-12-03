@@ -51,7 +51,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api\V1', 'm
         Route::patch('/products/{id}/updateStatus', [ProductController::class, 'updateStatus'])->can('update-product-status');
         Route::post('/addApplicant', [ApplicantController::class, 'addApplicant'])->can('add-applicant')->middleware('api.log');
         Route::post('/addApplicantsBulk', [ApplicantController::class, 'addApplicantsBulk'])->can('add-Applicant')->middleware('api.log');
-        Route::get('/applicant', [ApplicantController::class, 'ApplicantByWalletId'])->can('view-applicants');
+        Route::get('/applicantLoanDetails/{applicant}', [ApplicantController::class, 'applicantLoanDetails'])->can('view-applicants');
         Route::get('/applicants', [ApplicantController::class, 'index'])->can('view-applicants');
         Route::get('/applicants/{applicant}', [ApplicantController::class, 'show'])->can('view-applicants');
         Route::put('/applicants/{applicant}', [ApplicantController::class, 'update'])->can('update-applicants');
