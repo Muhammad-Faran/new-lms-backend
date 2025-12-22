@@ -14,7 +14,6 @@ class OFACNACTA extends Model
     protected $table = 'ofac_nacta';
 
     protected $fillable = [
-        'shipper_id',
         'applicant_id',
         'data',
     ];

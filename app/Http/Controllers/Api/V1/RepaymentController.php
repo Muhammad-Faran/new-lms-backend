@@ -149,7 +149,6 @@ class RepaymentController extends Controller
             'Amount Paid' => $repayment->amount,
             'Application Id' => optional($repayment->application)->id,
             'applicant' => optional($repayment->applicant)->first_name . ' ' . optional($repayment->applicant)->last_name,
-            'Shipper' => optional($repayment->applicant)->shipper_name,
             'Product' => optional($repayment->application->product)->name,
             'Financing Amount' => $repayment->application->loan_amount,
             'Total Charges' => $repayment->application->total_charges,
@@ -161,7 +160,7 @@ class RepaymentController extends Controller
     })->toArray();
 
     $headers = [
-        'Id','Amount Paid', 'Application Id', 'applicant', 'Shipper', 'Product', 'Financing Amount', 'Total Charges', 'Disbursed Amount',
+        'Id','Amount Paid', 'Application Id', 'applicant',  'Product', 'Financing Amount', 'Total Charges', 'Disbursed Amount',
         'Paid Date', 'Disbursement Date', 'Status',
     ];
 

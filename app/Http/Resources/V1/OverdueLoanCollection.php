@@ -46,8 +46,6 @@ class OverdueLoanCollection extends ResourceCollection
                     'cnic_front_image' => $application->applicant->cnic_front_image,
                     'cnic_back_image' => $application->applicant->cnic_back_image,
                     'wallet_id' => $application->applicant->wallet_id,
-                    'shipper_id' => $application->applicant->shipper_id,
-                    'shipper_name' => $application->applicant->shipper_name,
                     'father_name' => $application->applicant->father_name,
                     'mother_name' => $application->applicant->mother_name,
                     'address' => $application->applicant->address,

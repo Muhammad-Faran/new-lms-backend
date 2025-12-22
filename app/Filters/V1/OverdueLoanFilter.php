@@ -20,7 +20,6 @@ class OverdueLoanFilter extends ApiFilter
         'applicant.first_name',
         'applicant.last_name',
         'applicant.mobile_no',
-        'applicant.shipper_name',
         'applicant.cnic',
     ];
 

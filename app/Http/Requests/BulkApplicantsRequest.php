@@ -30,11 +30,6 @@ class BulkApplicantsRequest extends FormRequest
                 'max:15',
                 Rule::unique('applicants', 'wallet_id'),
             ],
-            'applicants.*.shipper_id' => [
-                'required',
-                'string',
-                'max:15',
-            ],
             'applicants.*.cnic_front_image' => 'nullable|string',
             'applicants.*.cnic_back_image' => 'nullable|string',
             'applicants.*.cnic_issuance_date' => 'nullable|date',

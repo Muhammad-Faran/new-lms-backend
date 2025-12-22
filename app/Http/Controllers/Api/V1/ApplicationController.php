@@ -59,7 +59,6 @@ class ApplicationController extends Controller
         return [
             'Id' => $application->id,
             'Applicant' => optional($application->applicant)->first_name . ' ' . optional($application->applicant)->last_name,
-            'Shipper' => optional($application->applicant)->shipper_name,
             'Product' => optional($application->product)->name,
             'Financing Amount' => $application->loan_amount,
             'Total Charges' => $application->total_charges,
@@ -71,7 +70,7 @@ class ApplicationController extends Controller
     })->toArray();
 
     $headers = [
-        'Id', 'Applicant', 'Shipper', 'Product', 'Financing Amount', 'Total Charges', 'Disbursed Amount',
+        'Id', 'Applicant', 'Product', 'Financing Amount', 'Total Charges', 'Disbursed Amount',
         'Due Date', 'Disbursement Date', 'Status',
     ];
 

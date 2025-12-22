@@ -50,8 +50,6 @@ class RepaymentCollection extends ResourceCollection
                     'cnic' => $repayment->applicant->cnic,
                     'cnic_issuance_date' => $repayment->applicant->cnic_issuance_date,
                     'wallet_id' => $repayment->applicant->wallet_id,
-                    'shipper_id' => $repayment->applicant->shipper_id,
-                    'shipper_name' => $repayment->applicant->shipper_name,
                     'father_name' => $repayment->applicant->father_name,
                     'mother_name' => $repayment->applicant->mother_name,
                     'address' => $repayment->applicant->address,

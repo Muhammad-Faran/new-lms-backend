@@ -17,18 +17,14 @@ class DashboardController extends Controller
         // Retrieve filters from the request
         $fromDate = $request->input('from_date');
         $toDate = $request->input('to_date');
-        $shipperName = $request->input('shipper_name');
         $productId = $request->input('product_id');
         // Base Application Query
         $baseQuery = Application::query();
 
         // Ensure applications belong to applicants who are NOT in the exclusion list
-        $baseQuery->whereHas('applicant', function ($query) use ($excludedApplicantIds, $shipperName) {
+        $baseQuery->whereHas('applicant', function ($query) use ($excludedApplicantIds) {
             $query->whereNotIn('id', $excludedApplicantIds);
 
-            if ($shipperName) {
-                $query->where('shipper_name', 'LIKE', "%$shipperName%");
-            }
         });
 
         // Apply filters only when they exist
@@ -56,34 +52,6 @@ class DashboardController extends Controller
         // Total revenue (sum of total_charges in applications table)
         $totalRevenue = (clone $applicationQuery)->sum('total_charges');
 
-        // Total number of shippers
-        $totalShippers = Applicant::whereNotIn('id', $excludedApplicantIds)
-            ->when($shipperName, function ($query) use ($shipperName) {
-                return $query->where('shipper_name', 'LIKE', "%$shipperName%");
-            })
-            ->count();
-
-        // Total active shippers in the last 3 months
-        $threeMonthsAgo = now()->subMonths(3);
-        $totalActiveShippers = Applicant::whereNotIn('id', $excludedApplicantIds)
-            ->when($shipperName, function ($query) use ($shipperName) {
-                return $query->where('shipper_name', 'LIKE', "%$shipperName%");
-            })
-            ->whereHas('applications', function ($query) use ($threeMonthsAgo, $fromDate, $toDate, $productId) {
-                $query->where('created_at', '>=', $threeMonthsAgo);
-
-                if ($fromDate) {
-                    $query->where('created_at', '>=', $fromDate);
-                }
-                if ($toDate) {
-                    $query->where('created_at', '<=', $toDate);
-                }
-                if ($productId) {
-                    $query->where('product_id', $productId);
-                }
-            })
-            ->count();
-
         // Count of delinquent orders (applications with overdue & unpaid installments)
         $delinquentOrdersCount = (clone $applicationQuery)->whereHas('installments', function ($query) {
             $query->where('due_date', '<', now())->where('status', 'unpaid');
@@ -97,8 +65,6 @@ class DashboardController extends Controller
         return response()->json([
             'total_disbursed_amount' => $totalDisbursedAmount,
             'total_aum' => $totalAUM,
-            'total_shippers' => $totalShippers,
-            'total_active_shippers' => $totalActiveShippers,
             'order_count' => $orderCount,
             'total_revenue' => $totalRevenue,
             'delinquent_orders_count' => $delinquentOrdersCount,

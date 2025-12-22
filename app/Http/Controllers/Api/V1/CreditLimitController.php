@@ -40,25 +40,12 @@ class CreditLimitController extends Controller
         ], 404);
     }
 
-    // Fetch the applicant's credit score data
-    $creditScore = $applicant->creditEngineShipperCreditScore()->first();
-    $creditScoreData = $creditScore && is_string($creditScore->data) 
-        ? json_decode($creditScore->data, true) 
-        : ($creditScore->data ?? null); // Handle case where data is already an array
 
     return response()->json([
         'credit_limit' => $creditLimit->credit_limit,
         'available_limit' => $creditLimit->available_limit,
         'status' => $creditLimit->status,
         'date_assigned' => $creditLimit->date_assigned,
-        'credit_score' => $creditScoreData ? [
-            'credit_score' => isset($creditScoreData['credit_score']) 
-            ? round($creditScoreData['credit_score'], 2) 
-            : null,
-            'category' => $creditScoreData['category'] ?? null,
-            'description' => $creditScoreData['description'] ?? null,
-            'improvement_tips' => $creditScoreData['improvement_tips'] ?? [],
-        ] : null,
     ], 200);
 }
 

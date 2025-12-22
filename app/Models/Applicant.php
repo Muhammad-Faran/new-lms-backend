@@ -68,29 +68,10 @@ class Applicant extends Model
         return $this->hasMany(Repayment::class);
     }
 
-    public function creditEngineShipperInfo()
-    {
-        return $this->hasOne(CreditEngineShipperInfo::class, 'applicant_id');
-    }
-
     public function ofacNacta()
     {
         return $this->hasOne(OFACNACTA::class, 'applicant_id', 'id');
     }
 
-    public function creditEngineShipperKyc()
-    {
-        return $this->hasOne(CreditEngineShipperKyc::class, 'applicant_id');
-    }
-
-    public function creditEngineShipperPricing()
-    {
-        return $this->hasOne(CreditEngineShipperPricing::class, 'applicant_id');
-    }
-
-    public function creditEngineShipperCreditScore()
-    {
-        return $this->hasOne(CreditEngineShipperCreditScore::class, 'applicant_id');
-    }
 
 }

@@ -10,7 +10,6 @@ class CreateOFACNACTATable extends Migration
     {
         Schema::create('ofac_nacta', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('shipper_id');
             $table->unsignedBigInteger('applicant_id');
             $table->foreign('applicant_id')->references('id')->on('applicants')->onDelete('cascade');
             $table->json('data');
