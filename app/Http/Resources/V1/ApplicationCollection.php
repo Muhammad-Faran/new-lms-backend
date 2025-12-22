@@ -19,6 +19,7 @@ class ApplicationCollection extends ResourceCollection
                 'total_charges' => $application->total_charges,
                 'disbursed_amount' => $application->disbursed_amount,
                 'outstanding_amount' => $application->outstanding_amount,
+                'consumer_number' => $application->consumer_number,
                 'status' => $application->status,
                 'next_due_date' => $application->next_due_date,
                 'created_at' => $application->created_at,

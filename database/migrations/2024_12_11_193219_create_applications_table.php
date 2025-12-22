@@ -20,6 +20,7 @@ return new class extends Migration
         $table->decimal('total_charges', 10, 2);
         $table->decimal('disbursed_amount', 10, 2);
         $table->decimal('outstanding_amount', 10, 2);
+        $table->unsignedBigInteger('consumer_number');
         $table->enum('status', ['review','approve','reject','disbursed','completed','cancelled','reversed','hold']); // Default status of the product
         $table->timestamps();
 

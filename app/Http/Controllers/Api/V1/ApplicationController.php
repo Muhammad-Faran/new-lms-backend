@@ -279,6 +279,13 @@ if (!empty($applicant->applicantThreshold) &&
         $disbursedAmount = $adjustedLoanAmount - $totalCharges;
         $outstandingAmount = $adjustedLoanAmount;
 
+        $lastConsumerNumber = Application::lockForUpdate()->max('consumer_number');
+
+        $consumerNumber = $lastConsumerNumber
+            ? $lastConsumerNumber + 1
+            : 91000000000;
+
+
         $application = Application::create([
             'applicant_id' => $applicant->id,
             'product_id' => $product->id,
@@ -287,6 +294,7 @@ if (!empty($applicant->applicantThreshold) &&
             'loan_amount' => $adjustedLoanAmount,
             'disbursed_amount' => $disbursedAmount,
             'total_charges' => $totalCharges,
+            'consumer_number'     => $consumerNumber,
             'outstanding_amount' => $outstandingAmount,
         ]);
 

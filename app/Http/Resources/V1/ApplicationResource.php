@@ -18,6 +18,7 @@ class ApplicationResource extends JsonResource
             'disbursed_amount' => $this->disbursed_amount,
             'status' => $this->status,
             'outstanding_amount' => $this->outstanding_amount,
+            'consumer_number' => $this->consumer_number,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'applicant' => $this->applicant ? [

@@ -49,6 +49,7 @@ class ApplicationFilter extends ApiFilter
         ['name' => 'Loan Amount', 'selector' => 'applications.loan_amount'],
         ['name' => 'Total Charges', 'selector' => 'applications.total_charges'],
         ['name' => 'Disbursed Amount', 'selector' => 'applications.disbursed_amount'],
+        ['name' => 'Consumer Number', 'selector' => 'applications.consumer_number'],
         ['name' => 'Outstanding Amount', 'selector' => 'applications.outstanding_amount'],
         ['name' => 'Status', 'selector' => 'applications.status'],
         ['name' => 'Created At', 'selector' => 'applications.created_at'],
